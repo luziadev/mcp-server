@@ -47,11 +47,11 @@
   "homepage": "https://luzia.dev",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/luziadev/luzia.git",
+    "url": "git+https://github.com/luziadev/mcp-server.git",
     "directory": "apps/mcp"
   },
   "bugs": {
-    "url": "https://github.com/luziadev/luzia/issues"
+    "url": "https://github.com/luziadev/mcp-server/issues"
   },
   "publishConfig": {
     "access": "public"

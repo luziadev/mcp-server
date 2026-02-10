@@ -1,0 +1,124 @@
+name: Publish MCP Server
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  # Build and publish to npm
+  publish-npm:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build package
+        run: bun run build
+        working-directory: apps/mcp
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/mcp-v}" >> $GITHUB_OUTPUT
+
+      - name: Set package version
+        run: |
+          cd apps/mcp
+          # Use jq to update version (avoids npm scanning workspace)
+          jq '.version = "${{ steps.version.outputs.version }}"' package.json > package.json.tmp
+          mv package.json.tmp package.json
+
+      - name: Pack and publish to npm
+        run: |
+          cd apps/mcp
+          # Pack creates tarball with only files specified in "files" field
+          npm pack --pack-destination /tmp
+          npm publish /tmp/luziadev-mcp-server-${{ steps.version.outputs.version }}.tgz --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  # Create GitHub Release
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [publish-npm]
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/mcp-v}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: MCP Server v${{ steps.version.outputs.version }}
+          generate_release_notes: true
+          body: |
+            ## 📦 Installation
+
+            ### Using Bun (Recommended)
+            ```bash
+            # Run directly with bunx
+            bunx @luziadev/mcp-server --stdio
+
+            # Or install globally
+            bun add -g @luziadev/mcp-server
+            luzia-mcp --stdio
+            ```
+
+            ### Install Bun
+            ```bash
+            # macOS/Linux
+            curl -fsSL https://bun.sh/install | bash
+
+            # Windows
+            powershell -c "irm bun.sh/install.ps1 | iex"
+            ```
+
+            ### Claude Desktop / Claude Code
+            Add to your config file (replace `YOUR_USERNAME` with your actual username):
+            - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+            - **Claude Code:** `.claude/settings.json`
+
+            ```json
+            {
+              "mcpServers": {
+                "luzia": {
+                  "command": "/Users/YOUR_USERNAME/.bun/bin/bun",
+                  "args": ["x", "@luziadev/mcp-server", "--stdio"],
+                  "env": {
+                    "PATH": "/Users/YOUR_USERNAME/.bun/bin:/usr/local/bin:/usr/bin:/bin",
+                    "LUZIA_API_KEY": "lz_your_api_key"
+                  }
+                }
+              }
+            }
+            ```
+
+            > **Note:** Find your bun path with `which bun`
+
+            ## 📚 Documentation
+
+            - [npm package](https://www.npmjs.com/package/@luziadev/mcp-server)
+            - [README](https://github.com/${{ github.repository }}/tree/main/apps/mcp#readme)
