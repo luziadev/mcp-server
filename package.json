@@ -1,0 +1,72 @@
+{
+  "name": "@luziadev/mcp-server",
+  "version": "1.0.0-beta.2",
+  "description": "MCP server for cryptocurrency pricing data - access real-time ticker prices, exchanges, and markets from AI assistants",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "luzia-mcp": "./dist/index.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "build": "tsc && chmod +x dist/index.js",
+    "build:bun": "bun build src/index.ts --outdir dist --target bun",
+    "start": "bun dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "cryptocurrency",
+    "crypto",
+    "pricing",
+    "api",
+    "claude",
+    "ai",
+    "assistant",
+    "binance",
+    "coinbase",
+    "ticker",
+    "trading"
+  ],
+  "author": "Luzia <hello@luzia.dev>",
+  "license": "MIT",
+  "homepage": "https://luzia.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luziadev/luzia.git",
+    "directory": "apps/mcp"
+  },
+  "bugs": {
+    "url": "https://github.com/luziadev/luzia/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.0",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "hono": "^4.11.4",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.3"
+  }
+}

@@ -1,0 +1,164 @@
+{
+  "$schema": "https://cdn.jsdelivr.net/npm/@anthropic-ai/mcp-server-registry@latest/schema.json",
+  "name": "@luziadev/mcp-server",
+  "displayName": "Luzia MCP Server",
+  "description": "Access real-time cryptocurrency prices from multiple exchanges (Binance, Coinbase, Kraken, OKX, Bybit) through the Luzia API",
+  "version": "0.9.0",
+  "author": {
+    "name": "Luzia",
+    "email": "hello@luzia.dev",
+    "url": "https://luzia.dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/luziadev/luzia",
+    "directory": "apps/mcp"
+  },
+  "license": "MIT",
+  "homepage": "https://luzia.dev",
+  "categories": ["finance", "cryptocurrency", "data"],
+  "keywords": [
+    "crypto",
+    "cryptocurrency",
+    "bitcoin",
+    "ethereum",
+    "binance",
+    "coinbase",
+    "trading",
+    "prices",
+    "ticker",
+    "exchange"
+  ],
+  "installation": {
+    "npm": {
+      "package": "@luziadev/mcp-server",
+      "command": "bunx",
+      "args": ["@luziadev/mcp-server", "--stdio"]
+    }
+  },
+  "configuration": {
+    "required": [
+      {
+        "name": "LUZIA_API_KEY",
+        "description": "Your Luzia API key for authentication",
+        "type": "string",
+        "secret": true
+      }
+    ],
+    "optional": [
+      {
+        "name": "LUZIA_API_URL",
+        "description": "Luzia API base URL",
+        "type": "string",
+        "default": "https://api.luzia.dev"
+      },
+      {
+        "name": "MCP_PORT",
+        "description": "HTTP server port (for HTTP/SSE mode)",
+        "type": "number",
+        "default": 50060
+      },
+      {
+        "name": "LOG_LEVEL",
+        "description": "Logging level",
+        "type": "string",
+        "enum": ["trace", "debug", "info", "warn", "error"],
+        "default": "info"
+      }
+    ]
+  },
+  "tools": [
+    {
+      "name": "get_ticker",
+      "description": "Get current price for a specific trading pair on an exchange",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "exchange": {
+            "type": "string",
+            "description": "Exchange identifier (e.g., 'binance', 'coinbase')"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Trading pair symbol (e.g., 'BTC/USDT', 'ETH/USD')"
+          }
+        },
+        "required": ["exchange", "symbol"]
+      }
+    },
+    {
+      "name": "get_tickers",
+      "description": "Get prices for multiple trading pairs or all pairs on an exchange",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "exchange": {
+            "type": "string",
+            "description": "Exchange identifier"
+          },
+          "symbols": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Optional list of trading pair symbols"
+          }
+        },
+        "required": ["exchange"]
+      }
+    },
+    {
+      "name": "get_exchanges",
+      "description": "List all supported cryptocurrency exchanges and their current status",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "get_markets",
+      "description": "List all available trading pairs on a specific exchange",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "exchange": {
+            "type": "string",
+            "description": "Exchange identifier"
+          }
+        },
+        "required": ["exchange"]
+      }
+    }
+  ],
+  "prompts": [
+    {
+      "name": "analyze_price_movement",
+      "description": "Analyze recent price movements and trends for a cryptocurrency trading pair",
+      "arguments": [
+        {
+          "name": "exchange",
+          "description": "Exchange to analyze",
+          "required": true
+        },
+        {
+          "name": "symbol",
+          "description": "Trading pair to analyze",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "compare_exchanges",
+      "description": "Compare prices for a trading pair across multiple exchanges to find arbitrage opportunities",
+      "arguments": [
+        {
+          "name": "symbol",
+          "description": "Trading pair to compare",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "transports": ["stdio", "http"],
+  "runtimeRequirements": {
+    "bun": ">=1.0.0"
+  }
+}

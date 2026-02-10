@@ -1,0 +1,14 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "apps/mcp/Dockerfile"
+watchPatterns = ["apps/mcp/**"]
+
+[deploy]
+startCommand = "bun run start"
+healthcheckPath = "/health"
+healthcheckTimeout = 10
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+[service]
+internalPort = 50004
