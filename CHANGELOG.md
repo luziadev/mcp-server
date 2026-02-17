@@ -2,6 +2,17 @@
 
 All notable changes to `@luziadev/mcp-server` will be documented in this file.
 
+## [1.1.1] - 2026-02-17
+
+### Fixed
+
+- Release workflow updated for standalone repo (removed monorepo paths, fixed tag version extraction, dropped `--frozen-lockfile`)
+- Removed stale `repository.directory` from `package.json`
+
+### Added
+
+- Installation and updating instructions in README
+
 ## [1.1.0] - 2025-02-17
 
 ### Added
