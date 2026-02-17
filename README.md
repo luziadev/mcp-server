@@ -8,6 +8,7 @@ Model Context Protocol (MCP) server for cryptocurrency pricing data. Allows AI a
 ## Features
 
 - Real-time ticker prices from multiple exchanges (Binance, Coinbase, Kraken, OKX, Bybit)
+- Historical OHLCV candlestick data for technical analysis
 - Market information and trading pairs
 - Exchange status and availability
 
@@ -89,6 +90,7 @@ Add to `.claude/settings.json` (replace `YOUR_USERNAME`):
 |------|-------------|
 | `get_ticker` | Get current price for a specific trading pair |
 | `get_tickers` | Get prices for multiple pairs or all pairs on an exchange |
+| `get_history` | Get historical OHLCV candlestick data for a trading pair |
 | `get_exchanges` | List supported exchanges and their status |
 | `get_markets` | List available trading pairs on an exchange |
 
@@ -97,6 +99,7 @@ Add to `.claude/settings.json` (replace `YOUR_USERNAME`):
 | Prompt | Description |
 |--------|-------------|
 | `analyze_price_movement` | Analyze price movements and trends for a trading pair |
+| `analyze_ohlcv` | Analyze OHLCV candlestick data with technical analysis |
 | `compare_exchanges` | Compare prices across exchanges for arbitrage opportunities |
 
 ## Rate Limits
