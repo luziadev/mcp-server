@@ -27,6 +27,26 @@ curl -fsSL https://bun.sh/install | bash
 powershell -c "irm bun.sh/install.ps1 | iex"
 ```
 
+## Installation
+
+```bash
+# Run directly (no install needed)
+bunx @luziadev/mcp-server --stdio
+
+# Or install globally
+bun add -g @luziadev/mcp-server
+luzia-mcp --stdio
+```
+
+### Updating
+
+```bash
+# If installed globally
+bun add -g @luziadev/mcp-server@latest
+
+# If using bunx, it always fetches the latest version
+```
+
 ## Claude Desktop Setup
 
 1. **Find your Bun path:**
