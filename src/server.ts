@@ -17,17 +17,21 @@ import {
 import { getApiClient } from './api-client.js'
 import { createLogger } from './logging.js'
 import {
+  analyzeOhlcvPrompt,
   analyzePricePrompt,
   compareExchangesPrompt,
+  generateAnalyzeOhlcvPrompt,
   generateAnalyzePricePrompt,
   generateCompareExchangesPrompt,
 } from './prompts/index.js'
 import {
   executeGetExchanges,
+  executeGetHistory,
   executeGetMarkets,
   executeGetTicker,
   executeGetTickers,
   getExchangesTool,
+  getHistoryTool,
   getMarketsTool,
   getTickersTool,
   getTickerTool,
@@ -76,7 +80,7 @@ function registerToolHandlers(server: Server): void {
     log.debug({}, 'Listing tools')
 
     return {
-      tools: [getTickerTool, getTickersTool, getExchangesTool, getMarketsTool],
+      tools: [getTickerTool, getTickersTool, getHistoryTool, getExchangesTool, getMarketsTool],
     }
   })
 
@@ -99,6 +103,9 @@ function registerToolHandlers(server: Server): void {
       case 'get_markets':
         return executeGetMarkets(args)
 
+      case 'get_history':
+        return executeGetHistory(args)
+
       default:
         return {
           content: [{ type: 'text', text: `Unknown tool: ${name}` }],
@@ -117,7 +124,7 @@ function registerPromptHandlers(server: Server): void {
     log.debug({}, 'Listing prompts')
 
     return {
-      prompts: [analyzePricePrompt, compareExchangesPrompt],
+      prompts: [analyzePricePrompt, analyzeOhlcvPrompt, compareExchangesPrompt],
     }
   })
 
@@ -133,6 +140,9 @@ function registerPromptHandlers(server: Server): void {
 
       case 'compare_exchanges':
         return generateCompareExchangesPrompt(args ?? {})
+
+      case 'analyze_ohlcv':
+        return generateAnalyzeOhlcvPrompt(args ?? {})
 
       default:
         return {

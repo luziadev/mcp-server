@@ -67,6 +67,33 @@ export interface Market {
 }
 
 /**
+ * A single OHLCV candlestick
+ */
+export interface OhlcvCandle {
+  timestamp: number
+  open: number
+  high: number
+  low: number
+  close: number
+  volume: number
+  quoteVolume: number | null
+  trades: number | null
+}
+
+/**
+ * Response containing OHLCV candlestick data
+ */
+export interface OhlcvResponse {
+  exchange: string
+  symbol: string
+  interval: string
+  candles: OhlcvCandle[]
+  count: number
+  start: number
+  end: number
+}
+
+/**
  * API error with status code and message
  */
 export class ApiError extends Error {
@@ -251,6 +278,37 @@ class LuziaApiClient {
       '/v1/tickers',
       { query }
     )
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // History Endpoints
+  // ─────────────────────────────────────────────────────────────
+
+  /**
+   * Get historical OHLCV candle data
+   * @param exchange Exchange ID (e.g., "binance")
+   * @param symbol Normalized symbol (e.g., "BTC/USDT")
+   * @param options Query options (interval, start, end, limit)
+   */
+  async getHistory(
+    exchange: string,
+    symbol: string,
+    options?: {
+      interval?: string
+      start?: number
+      end?: number
+      limit?: number
+    }
+  ): Promise<OhlcvResponse> {
+    const urlSymbol = this.symbolToUrl(symbol)
+    return this.request<OhlcvResponse>(`/v1/history/${exchange.toLowerCase()}/${urlSymbol}`, {
+      query: {
+        interval: options?.interval,
+        start: options?.start,
+        end: options?.end,
+        limit: options?.limit,
+      },
+    })
   }
 
   // ─────────────────────────────────────────────────────────────
