@@ -2,12 +2,14 @@
 
 All notable changes to `@luziadev/mcp-server` will be documented in this file.
 
-## [1.1.1] - 2026-02-17
+## [1.1.1] - 2026-02-18
 
 ### Fixed
 
 - Release workflow updated for standalone repo (removed monorepo paths, fixed tag version extraction, dropped `--frozen-lockfile`)
 - Removed stale `repository.directory` from `package.json`
+- Removed unsupported `4h` candle interval from `get_history` tool and `analyze_ohlcv` prompt
+- Changed ticker `timestamp` type from `number` to `string` for consistency with API responses
 
 ### Added
 
