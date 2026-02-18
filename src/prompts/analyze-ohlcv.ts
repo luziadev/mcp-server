@@ -31,7 +31,7 @@ export const analyzeOhlcvPrompt = {
     },
     {
       name: 'interval',
-      description: 'Candle interval: "1m", "5m", "15m", "1h", "4h", "1d" (default: "1h")',
+      description: 'Candle interval: "1m", "5m", "15m", "1h", "1d" (default: "1h")',
       required: false,
     },
     {
@@ -48,7 +48,7 @@ export const analyzeOhlcvPrompt = {
 const inputSchema = z.object({
   exchange: z.string().min(1),
   symbol: z.string().min(1),
-  interval: z.enum(['1m', '5m', '15m', '1h', '4h', '1d']).optional(),
+  interval: z.enum(['1m', '5m', '15m', '1h', '1d']).optional(),
   period: z.string().optional(),
 })
 

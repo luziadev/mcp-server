@@ -17,7 +17,7 @@ All notable changes to `@luziadev/mcp-server` will be documented in this file.
 
 ### Added
 
-- **`get_history` tool** - Fetch historical OHLCV (Open, High, Low, Close, Volume) candlestick data for any trading pair. Supports configurable intervals (`1m`, `5m`, `15m`, `1h`, `4h`, `1d`), custom time ranges, and up to 500 candles per request. Returns AI-friendly formatted summaries with period change, highs/lows, and volume totals.
+- **`get_history` tool** - Fetch historical OHLCV (Open, High, Low, Close, Volume) candlestick data for any trading pair. Supports configurable intervals (`1m`, `5m`, `15m`, `1h`, `1d`), custom time ranges, and up to 500 candles per request. Returns AI-friendly formatted summaries with period change, highs/lows, and volume totals.
 - **`analyze_ohlcv` prompt** - Technical analysis prompt that fetches OHLCV data and asks the AI to perform trend analysis, identify support/resistance levels, analyze volume patterns, detect candlestick patterns, and assess momentum.
 - **`OhlcvCandle` and `OhlcvResponse` types** in the API client for typed history data.
 - **`getHistory` method** on the API client to call the `/v1/history/:exchange/:symbol` endpoint.
