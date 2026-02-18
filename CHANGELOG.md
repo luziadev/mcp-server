@@ -2,7 +2,7 @@
 
 All notable changes to `@luziadev/mcp-server` will be documented in this file.
 
-## [1.1.1] - 2026-02-18
+## [1.1.2] - 2026-02-18
 
 ### Fixed
 
