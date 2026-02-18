@@ -34,7 +34,7 @@ export interface Ticker {
   quoteVolume: number | null
   change: number | null
   changePercent: number | null
-  timestamp: number
+  timestamp: string
 }
 
 /**

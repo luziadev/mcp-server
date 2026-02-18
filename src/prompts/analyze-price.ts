@@ -112,7 +112,7 @@ function buildAnalysisPrompt(ticker: {
   quoteVolume: number | null
   change: number | null
   changePercent: number | null
-  timestamp: number
+  timestamp: string
 }): string {
   const spread = ticker.bid && ticker.ask ? ((ticker.ask - ticker.bid) / ticker.ask) * 100 : null
   const range = ticker.high && ticker.low ? ((ticker.high - ticker.low) / ticker.low) * 100 : null
@@ -144,7 +144,7 @@ Please provide:
 4. **Spread Analysis**: Is the bid-ask spread tight or wide? What does this indicate about liquidity?
 5. **Risk Considerations**: What should traders be aware of when considering this pair?
 
-*Data timestamp: ${new Date(ticker.timestamp).toISOString()}*`
+*Data timestamp: ${ticker.timestamp}*`
 }
 
 function formatPrice(price: number | null): string {
