@@ -16,11 +16,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -28,10 +23,10 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
-        run: bun install
+        run: npm install
 
       - name: Build package
-        run: bun run build
+        run: npm run build
 
       - name: Extract version from tag
         id: version
@@ -70,29 +65,19 @@ jobs:
           name: MCP Server v${{ steps.version.outputs.version }}
           generate_release_notes: true
           body: |
-            ## 📦 Installation
+            ## Installation
 
-            ### Using Bun (Recommended)
             ```bash
-            # Run directly with bunx
-            bunx @luziadev/mcp-server --stdio
+            # Run directly with npx (no install needed)
+            LUZIA_API_KEY=lz_your_api_key npx @luziadev/mcp-server --stdio
 
             # Or install globally
-            bun add -g @luziadev/mcp-server
-            luzia-mcp --stdio
-            ```
-
-            ### Install Bun
-            ```bash
-            # macOS/Linux
-            curl -fsSL https://bun.sh/install | bash
-
-            # Windows
-            powershell -c "irm bun.sh/install.ps1 | iex"
+            npm install -g @luziadev/mcp-server
+            LUZIA_API_KEY=lz_your_api_key luzia-mcp --stdio
             ```
 
             ### Claude Desktop / Claude Code
-            Add to your config file (replace `YOUR_USERNAME` with your actual username):
+            Add to your config file:
             - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
             - **Claude Code:** `.claude/settings.json`
 
@@ -100,10 +85,9 @@ jobs:
             {
               "mcpServers": {
                 "luzia": {
-                  "command": "/Users/YOUR_USERNAME/.bun/bin/bun",
-                  "args": ["x", "@luziadev/mcp-server", "--stdio"],
+                  "command": "npx",
+                  "args": ["-y", "@luziadev/mcp-server", "--stdio"],
                   "env": {
-                    "PATH": "/Users/YOUR_USERNAME/.bun/bin:/usr/local/bin:/usr/bin:/bin",
                     "LUZIA_API_KEY": "lz_your_api_key"
                   }
                 }
@@ -111,9 +95,9 @@ jobs:
             }
             ```
 
-            > **Note:** Find your bun path with `which bun`
+            > **Note:** Requires Node.js 20 or later (`node --version`)
 
-            ## 📚 Documentation
+            ## Documentation
 
             - [npm package](https://www.npmjs.com/package/@luziadev/mcp-server)
             - [README](https://github.com/${{ github.repository }}#readme)
