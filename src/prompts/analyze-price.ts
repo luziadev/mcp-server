@@ -4,9 +4,10 @@
  * Analyze recent price changes for a trading pair.
  */
 
+import { LuziaError } from '@luziadev/sdk'
 import { z } from 'zod'
-import { getApiClient } from '../api-client.js'
 import { createLogger } from '../logging.js'
+import { getLuziaClient } from '../sdk.js'
 
 const log = createLogger({ module: 'prompt:analyze-price' })
 
@@ -51,21 +52,25 @@ export async function generateAnalyzePricePrompt(args: Record<string, string>): 
 
     log.debug({ exchange, symbol }, 'Generating price analysis prompt')
 
-    const apiClient = getApiClient()
-    const ticker = await apiClient.getTicker(exchange.toLowerCase(), symbol.toUpperCase())
-
-    if (!ticker) {
-      return {
-        messages: [
-          {
-            role: 'user',
-            content: {
-              type: 'text',
-              text: `Unable to fetch data for ${symbol} on ${exchange}. Please verify the symbol and exchange are correct and try again.`,
+    let ticker
+    try {
+      const luzia = getLuziaClient()
+      ticker = await luzia.tickers.get(exchange.toLowerCase(), symbol.toUpperCase())
+    } catch (error) {
+      if (error instanceof LuziaError && error.code === 'not_found') {
+        return {
+          messages: [
+            {
+              role: 'user',
+              content: {
+                type: 'text',
+                text: `Unable to fetch data for ${symbol} on ${exchange}. Please verify the symbol and exchange are correct and try again.`,
+              },
             },
-          },
-        ],
+          ],
+        }
       }
+      throw error
     }
 
     // Build the analysis prompt with current data
@@ -100,41 +105,45 @@ export async function generateAnalyzePricePrompt(args: Record<string, string>): 
  * Build the analysis prompt with ticker data
  */
 function buildAnalysisPrompt(ticker: {
-  symbol: string
-  exchange: string
-  last: number | null
-  bid: number | null
-  ask: number | null
-  high: number | null
-  low: number | null
-  open: number | null
-  volume: number | null
-  quoteVolume: number | null
-  change: number | null
-  changePercent: number | null
-  timestamp: string
+  symbol?: string
+  exchange?: string
+  last?: number | null
+  bid?: number | null
+  ask?: number | null
+  high?: number | null
+  low?: number | null
+  open?: number | null
+  volume?: number | null
+  quoteVolume?: number | null
+  change?: number | null
+  changePercent?: number | null
+  timestamp?: string
 }): string {
-  const spread = ticker.bid && ticker.ask ? ((ticker.ask - ticker.bid) / ticker.ask) * 100 : null
-  const range = ticker.high && ticker.low ? ((ticker.high - ticker.low) / ticker.low) * 100 : null
+  const bid = ticker.bid ?? null
+  const ask = ticker.ask ?? null
+  const spread = bid && ask ? ((ask - bid) / ask) * 100 : null
+  const high = ticker.high ?? null
+  const low = ticker.low ?? null
+  const range = high && low ? ((high - low) / low) * 100 : null
 
-  return `Analyze the price movement for ${ticker.symbol} on ${ticker.exchange.toUpperCase()}:
+  return `Analyze the price movement for ${ticker.symbol ?? 'Unknown'} on ${(ticker.exchange ?? 'unknown').toUpperCase()}:
 
 ## Current Price Data
-- **Last Price**: ${formatPrice(ticker.last)}
-- **Bid**: ${formatPrice(ticker.bid)}
-- **Ask**: ${formatPrice(ticker.ask)}
+- **Last Price**: ${formatPrice(ticker.last ?? null)}
+- **Bid**: ${formatPrice(bid)}
+- **Ask**: ${formatPrice(ask)}
 - **Spread**: ${spread !== null ? `${spread.toFixed(4)}%` : 'N/A'}
 
 ## 24-Hour Statistics
-- **Open**: ${formatPrice(ticker.open)}
-- **High**: ${formatPrice(ticker.high)}
-- **Low**: ${formatPrice(ticker.low)}
+- **Open**: ${formatPrice(ticker.open ?? null)}
+- **High**: ${formatPrice(high)}
+- **Low**: ${formatPrice(low)}
 - **24h Range**: ${range !== null ? `${range.toFixed(2)}%` : 'N/A'}
-- **24h Change**: ${formatChange(ticker.change, ticker.changePercent)}
+- **24h Change**: ${formatChange(ticker.change ?? null, ticker.changePercent ?? null)}
 
 ## Volume
-- **Base Volume**: ${formatVolume(ticker.volume)}
-- **Quote Volume**: ${formatVolume(ticker.quoteVolume)}
+- **Base Volume**: ${formatVolume(ticker.volume ?? null)}
+- **Quote Volume**: ${formatVolume(ticker.quoteVolume ?? null)}
 
 ## Analysis Request
 Please provide:
@@ -144,7 +153,7 @@ Please provide:
 4. **Spread Analysis**: Is the bid-ask spread tight or wide? What does this indicate about liquidity?
 5. **Risk Considerations**: What should traders be aware of when considering this pair?
 
-*Data timestamp: ${ticker.timestamp}*`
+*Data timestamp: ${ticker.timestamp ?? 'N/A'}*`
 }
 
 function formatPrice(price: number | null): string {

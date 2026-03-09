@@ -2,8 +2,8 @@
  * Shared error handling for MCP tools
  */
 
+import { LuziaError } from '@luziadev/sdk'
 import { z } from 'zod'
-import { ApiError } from '../api-client.js'
 
 export type ToolResult = {
   content: Array<{ type: 'text'; text: string }>
@@ -26,8 +26,8 @@ export function handleToolError(error: unknown, toolName: string): ToolResult {
     }
   }
 
-  if (error instanceof ApiError) {
-    return handleApiError(error)
+  if (error instanceof LuziaError) {
+    return handleLuziaError(error)
   }
 
   return {
@@ -42,34 +42,34 @@ export function handleToolError(error: unknown, toolName: string): ToolResult {
 }
 
 /**
- * Handle API-specific errors
+ * Handle Luzia SDK errors
  */
-function handleApiError(error: ApiError): ToolResult {
-  if (error.isNotFound()) {
+function handleLuziaError(error: LuziaError): ToolResult {
+  if (error.code === 'not_found') {
     return {
       content: [
         {
           type: 'text',
-          text: `Not found: ${error.details || error.message}`,
+          text: `Not found: ${error.message}`,
         },
       ],
       isError: true,
     }
   }
 
-  if (error.isUnavailable()) {
+  if (error.code === 'server') {
     return {
       content: [
         {
           type: 'text',
-          text: `Service unavailable: ${error.details || error.message}`,
+          text: `Service unavailable: ${error.message}`,
         },
       ],
       isError: true,
     }
   }
 
-  if (error.isRateLimitError()) {
+  if (error.code === 'rate_limit') {
     return {
       content: [
         {
@@ -85,7 +85,7 @@ function handleApiError(error: ApiError): ToolResult {
     content: [
       {
         type: 'text',
-        text: `API error: ${error.details || error.message}`,
+        text: `API error: ${error.message}`,
       },
     ],
     isError: true,

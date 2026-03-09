@@ -5,8 +5,8 @@
  */
 
 import { z } from 'zod'
-import { getApiClient } from '../api-client.js'
 import { createLogger } from '../logging.js'
+import { getLuziaClient } from '../sdk.js'
 import { handleToolError, type ToolResult } from './error-handler.js'
 
 const log = createLogger({ module: 'tool:get-tickers' })
@@ -58,14 +58,16 @@ export async function executeGetTickers(args: unknown): Promise<ToolResult> {
 
     log.debug({ exchange, symbols, limit }, 'Fetching tickers')
 
-    const apiClient = getApiClient()
+    const luzia = getLuziaClient()
 
     // Use the filtered endpoint
-    const { tickers, total } = await apiClient.getTickersFiltered({
+    const result = await luzia.tickers.listFiltered({
       exchange,
       symbols,
       limit,
     })
+    const tickers = result.tickers ?? []
+    const total = result.total ?? 0
 
     if (tickers.length === 0) {
       return {
@@ -97,11 +99,11 @@ export async function executeGetTickers(args: unknown): Promise<ToolResult> {
  */
 function formatTickersResponse(
   tickers: Array<{
-    symbol: string
-    exchange: string
-    last: number | null
-    changePercent: number | null
-    volume: number | null
+    symbol?: string
+    exchange?: string
+    last?: number | null
+    changePercent?: number | null
+    volume?: number | null
   }>,
   totalCount: number
 ): string {
@@ -113,11 +115,11 @@ function formatTickersResponse(
   ]
 
   for (const ticker of tickers) {
-    const price = ticker.last !== null ? formatPrice(ticker.last) : 'N/A'
-    const change = formatChange(ticker.changePercent)
-    const volume = formatVolume(ticker.volume)
+    const price = ticker.last != null ? formatPrice(ticker.last) : 'N/A'
+    const change = formatChange(ticker.changePercent ?? null)
+    const volume = formatVolume(ticker.volume ?? null)
 
-    lines.push(`| ${ticker.symbol} | ${ticker.exchange} | ${price} | ${change} | ${volume} |`)
+    lines.push(`| ${ticker.symbol ?? 'N/A'} | ${ticker.exchange ?? 'N/A'} | ${price} | ${change} | ${volume} |`)
   }
 
   lines.push('')

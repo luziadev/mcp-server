@@ -4,8 +4,9 @@
  * List all supported cryptocurrency exchanges with their status.
  */
 
-import { ApiError, getApiClient } from '../api-client.js'
+import { LuziaError } from '@luziadev/sdk'
 import { createLogger } from '../logging.js'
+import { getLuziaClient } from '../sdk.js'
 
 const log = createLogger({ module: 'tool:get-exchanges' })
 
@@ -31,8 +32,8 @@ export async function executeGetExchanges(): Promise<{
   try {
     log.debug({}, 'Fetching exchanges')
 
-    const apiClient = getApiClient()
-    const exchanges = await apiClient.getExchanges()
+    const luzia = getLuziaClient()
+    const exchanges = await luzia.exchanges.list()
 
     // Format the response
     const response = formatExchangesResponse(exchanges)
@@ -45,12 +46,12 @@ export async function executeGetExchanges(): Promise<{
   } catch (error) {
     log.error({ error }, 'Failed to execute get_exchanges')
 
-    if (error instanceof ApiError) {
+    if (error instanceof LuziaError) {
       return {
         content: [
           {
             type: 'text',
-            text: `API error: ${error.details || error.message}`,
+            text: `API error: ${error.message}`,
           },
         ],
         isError: true,
@@ -74,10 +75,10 @@ export async function executeGetExchanges(): Promise<{
  */
 function formatExchangesResponse(
   exchangesList: Array<{
-    id: string
-    name: string
-    status: string
-    websiteUrl: string | null
+    id?: string
+    name?: string
+    status?: string
+    websiteUrl?: string | null
   }>
 ): string {
   const lines: string[] = [
@@ -90,8 +91,8 @@ function formatExchangesResponse(
   for (const exchange of exchangesList) {
     const statusIcon = exchange.status === 'operational' ? '🟢' : '🟠'
 
-    lines.push(`### ${exchange.name} (\`${exchange.id}\`)`)
-    lines.push(`- **Status**: ${statusIcon} ${exchange.status}`)
+    lines.push(`### ${exchange.name ?? 'Unknown'} (\`${exchange.id ?? 'unknown'}\`)`)
+    lines.push(`- **Status**: ${statusIcon} ${exchange.status ?? 'unknown'}`)
     if (exchange.websiteUrl) {
       lines.push(`- **Website**: ${exchange.websiteUrl}`)
     }

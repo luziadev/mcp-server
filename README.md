@@ -14,63 +14,46 @@ Model Context Protocol (MCP) server for cryptocurrency pricing data. Allows AI a
 
 ## Requirements
 
-- [Bun](https://bun.sh) runtime
+- [Node.js](https://nodejs.org) 20 or later
 - A Luzia API key ([get one here](https://luzia.dev/keys))
-
-**Install Bun:**
-
-```bash
-# macOS/Linux
-curl -fsSL https://bun.sh/install | bash
-
-# Windows
-powershell -c "irm bun.sh/install.ps1 | iex"
-```
 
 ## Installation
 
 ```bash
-# Run directly (no install needed)
-bunx @luziadev/mcp-server --stdio
+# Run directly with npx (no install needed)
+LUZIA_API_KEY=lz_your_api_key npx @luziadev/mcp-server --stdio
 
 # Or install globally
-bun add -g @luziadev/mcp-server
-luzia-mcp --stdio
+npm install -g @luziadev/mcp-server
+LUZIA_API_KEY=lz_your_api_key luzia-mcp --stdio
 ```
 
 ### Updating
 
 ```bash
 # If installed globally
-bun add -g @luziadev/mcp-server@latest
+npm install -g @luziadev/mcp-server@latest
 
-# If using bunx, it always fetches the latest version
+# If using npx, it always fetches the latest version
+npx @luziadev/mcp-server@latest --stdio
 ```
 
 ## Claude Desktop Setup
 
-1. **Find your Bun path:**
-
-   ```bash
-   which bun
-   # Usually: /Users/YOUR_USERNAME/.bun/bin/bun
-   ```
-
-2. **Open Claude Desktop config:**
+1. **Open Claude Desktop config:**
 
    - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
    - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 
-3. **Add the Luzia server** (replace `YOUR_USERNAME` and your API key):
+2. **Add the Luzia server** (replace with your API key):
 
    ```json
    {
      "mcpServers": {
        "luzia": {
-         "command": "/Users/YOUR_USERNAME/.bun/bin/bun",
-         "args": ["x", "@luziadev/mcp-server", "--stdio"],
+         "command": "npx",
+         "args": ["-y", "@luziadev/mcp-server", "--stdio"],
          "env": {
-           "PATH": "/Users/YOUR_USERNAME/.bun/bin:/usr/local/bin:/usr/bin:/bin",
            "LUZIA_API_KEY": "lz_your_api_key"
          }
        }
@@ -78,25 +61,24 @@ bun add -g @luziadev/mcp-server@latest
    }
    ```
 
-4. **Restart Claude Desktop** (Cmd+Q on macOS, then reopen)
+3. **Restart Claude Desktop** (Cmd+Q on macOS, then reopen)
 
-5. **Start asking questions:**
+4. **Start asking questions:**
    - "What's the current price of Bitcoin on Binance?"
    - "Compare ETH prices across all exchanges"
    - "Show me the top trading pairs on Coinbase"
 
 ## Claude Code Setup
 
-Add to `.claude/settings.json` (replace `YOUR_USERNAME`):
+Add to `.claude/settings.json`:
 
 ```json
 {
   "mcpServers": {
     "luzia": {
-      "command": "/Users/YOUR_USERNAME/.bun/bin/bun",
-      "args": ["x", "@luziadev/mcp-server", "--stdio"],
+      "command": "npx",
+      "args": ["-y", "@luziadev/mcp-server", "--stdio"],
       "env": {
-        "PATH": "/Users/YOUR_USERNAME/.bun/bin:/usr/local/bin:/usr/bin:/bin",
         "LUZIA_API_KEY": "lz_your_api_key"
       }
     }
@@ -133,7 +115,7 @@ Inherits from your Luzia subscription tier:
 ### Claude Desktop can't find the server
 
 1. Verify `claude_desktop_config.json` is valid JSON
-2. Ensure the bun path is correct (run `which bun`)
+2. Ensure Node.js 20+ is installed (run `node --version`)
 3. Restart Claude Desktop completely (Cmd+Q on macOS)
 
 ### "Unauthorized" errors

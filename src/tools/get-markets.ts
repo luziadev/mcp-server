@@ -5,8 +5,8 @@
  */
 
 import { z } from 'zod'
-import { getApiClient } from '../api-client.js'
 import { createLogger } from '../logging.js'
+import { getLuziaClient } from '../sdk.js'
 import { handleToolError, type ToolResult } from './error-handler.js'
 
 const log = createLogger({ module: 'tool:get-markets' })
@@ -57,12 +57,14 @@ export async function executeGetMarkets(args: unknown): Promise<ToolResult> {
 
     log.debug({ exchange, quote, limit }, 'Fetching markets')
 
-    const apiClient = getApiClient()
-    const { markets, total } = await apiClient.getMarkets(exchange, {
+    const luzia = getLuziaClient()
+    const result = await luzia.markets.list(exchange, {
       quote,
       active: true,
       limit,
     })
+    const markets = result.markets ?? []
+    const total = result.total ?? 0
 
     if (markets.length === 0) {
       return {
@@ -95,9 +97,9 @@ export async function executeGetMarkets(args: unknown): Promise<ToolResult> {
 function formatMarketsResponse(
   exchange: string,
   marketsList: Array<{
-    symbol: string
-    base: string
-    quote: string
+    symbol?: string
+    base?: string
+    quote?: string
   }>,
   totalCount: number,
   quoteFilter?: string
@@ -106,9 +108,10 @@ function formatMarketsResponse(
   const byQuote = new Map<string, Array<{ symbol: string; base: string }>>()
 
   for (const market of marketsList) {
-    const existing = byQuote.get(market.quote) ?? []
-    existing.push({ symbol: market.symbol, base: market.base })
-    byQuote.set(market.quote, existing)
+    const quote = market.quote ?? 'UNKNOWN'
+    const existing = byQuote.get(quote) ?? []
+    existing.push({ symbol: market.symbol ?? 'N/A', base: market.base ?? 'N/A' })
+    byQuote.set(quote, existing)
   }
 
   const lines: string[] = [

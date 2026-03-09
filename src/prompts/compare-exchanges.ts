@@ -4,9 +4,10 @@
  * Compare prices across multiple exchanges for arbitrage opportunities.
  */
 
+import { LuziaError } from '@luziadev/sdk'
 import { z } from 'zod'
-import { getApiClient } from '../api-client.js'
 import { createLogger } from '../logging.js'
+import { getLuziaClient } from '../sdk.js'
 
 const log = createLogger({ module: 'prompt:compare-exchanges' })
 
@@ -58,7 +59,7 @@ export async function generateCompareExchangesPrompt(args: Record<string, string
 
     log.debug({ symbol, exchanges: exchangeList }, 'Generating exchange comparison prompt')
 
-    const apiClient = getApiClient()
+    const luzia = getLuziaClient()
 
     // Fetch ticker from each exchange
     const tickerResults: Array<{
@@ -72,16 +73,32 @@ export async function generateCompareExchangesPrompt(args: Record<string, string
     }> = []
 
     for (const exchange of exchangeList) {
-      const ticker = await apiClient.getTicker(exchange, symbol.toUpperCase())
-      tickerResults.push({
-        exchange,
-        last: ticker?.last ?? null,
-        bid: ticker?.bid ?? null,
-        ask: ticker?.ask ?? null,
-        volume: ticker?.volume ?? null,
-        changePercent: ticker?.changePercent ?? null,
-        available: ticker !== null,
-      })
+      try {
+        const ticker = await luzia.tickers.get(exchange, symbol.toUpperCase())
+        tickerResults.push({
+          exchange,
+          last: ticker?.last ?? null,
+          bid: ticker?.bid ?? null,
+          ask: ticker?.ask ?? null,
+          volume: ticker?.volume ?? null,
+          changePercent: ticker?.changePercent ?? null,
+          available: true,
+        })
+      } catch (error) {
+        if (error instanceof LuziaError && error.code === 'not_found') {
+          tickerResults.push({
+            exchange,
+            last: null,
+            bid: null,
+            ask: null,
+            volume: null,
+            changePercent: null,
+            available: false,
+          })
+        } else {
+          throw error
+        }
+      }
     }
 
     const availableTickers = tickerResults.filter((t) => t.available)

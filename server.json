@@ -32,8 +32,8 @@
   "installation": {
     "npm": {
       "package": "@luziadev/mcp-server",
-      "command": "bunx",
-      "args": ["@luziadev/mcp-server", "--stdio"]
+      "command": "npx",
+      "args": ["-y", "@luziadev/mcp-server", "--stdio"]
     }
   },
   "configuration": {
@@ -159,6 +159,6 @@
   ],
   "transports": ["stdio", "http"],
   "runtimeRequirements": {
-    "bun": ">=1.0.0"
+    "node": ">=20.0.0"
   }
 }

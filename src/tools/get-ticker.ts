@@ -4,9 +4,10 @@
  * Get real-time price data for a specific cryptocurrency trading pair on a given exchange.
  */
 
+import { LuziaError } from '@luziadev/sdk'
 import { z } from 'zod'
-import { getApiClient } from '../api-client.js'
 import { createLogger } from '../logging.js'
+import { getLuziaClient } from '../sdk.js'
 import { handleToolError, type ToolResult } from './error-handler.js'
 
 const log = createLogger({ module: 'tool:get-ticker' })
@@ -52,19 +53,23 @@ export async function executeGetTicker(args: unknown): Promise<ToolResult> {
 
     log.debug({ exchange, symbol }, 'Fetching ticker')
 
-    const apiClient = getApiClient()
-    const ticker = await apiClient.getTicker(exchange.toLowerCase(), symbol.toUpperCase())
-
-    if (!ticker) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: `Ticker not found for ${symbol} on ${exchange}. The symbol may not be available or the exchange may be temporarily unavailable.`,
-          },
-        ],
-        isError: true,
+    let ticker
+    try {
+      const luzia = getLuziaClient()
+      ticker = await luzia.tickers.get(exchange.toLowerCase(), symbol.toUpperCase())
+    } catch (error) {
+      if (error instanceof LuziaError && error.code === 'not_found') {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Ticker not found for ${symbol} on ${exchange}. The symbol may not be available or the exchange may be temporarily unavailable.`,
+            },
+          ],
+          isError: true,
+        }
       }
+      throw error
     }
 
     // Format the ticker data for AI consumption
@@ -85,22 +90,22 @@ export async function executeGetTicker(args: unknown): Promise<ToolResult> {
  * Format ticker data for AI-friendly response
  */
 function formatTickerResponse(ticker: {
-  symbol: string
-  exchange: string
-  last: number | null
-  bid: number | null
-  ask: number | null
-  high: number | null
-  low: number | null
-  open: number | null
-  volume: number | null
-  quoteVolume: number | null
-  change: number | null
-  changePercent: number | null
-  timestamp: string
+  symbol?: string
+  exchange?: string
+  last?: number | null
+  bid?: number | null
+  ask?: number | null
+  high?: number | null
+  low?: number | null
+  open?: number | null
+  volume?: number | null
+  quoteVolume?: number | null
+  change?: number | null
+  changePercent?: number | null
+  timestamp?: string
 }): string {
   const lines: string[] = [
-    `## ${ticker.symbol} on ${ticker.exchange.toUpperCase()}`,
+    `## ${ticker.symbol ?? 'Unknown'} on ${(ticker.exchange ?? 'unknown').toUpperCase()}`,
     '',
     '### Current Price',
     `- **Last**: ${formatPrice(ticker.last)}`,
@@ -111,25 +116,25 @@ function formatTickerResponse(ticker: {
     `- **High**: ${formatPrice(ticker.high)}`,
     `- **Low**: ${formatPrice(ticker.low)}`,
     `- **Open**: ${formatPrice(ticker.open)}`,
-    `- **Change**: ${formatChange(ticker.change, ticker.changePercent)}`,
+    `- **Change**: ${formatChange(ticker.change ?? null, ticker.changePercent ?? null)}`,
     '',
     '### Volume',
     `- **Base Volume**: ${formatVolume(ticker.volume)}`,
     `- **Quote Volume**: ${formatVolume(ticker.quoteVolume)}`,
     '',
-    `*Last updated: ${ticker.timestamp}*`,
+    `*Last updated: ${ticker.timestamp ?? 'N/A'}*`,
   ]
 
   return lines.join('\n')
 }
 
-function formatPrice(price: number | null): string {
-  if (price === null) return 'N/A'
+function formatPrice(price: number | null | undefined): string {
+  if (price == null) return 'N/A'
   return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })
 }
 
-function formatVolume(volume: number | null): string {
-  if (volume === null) return 'N/A'
+function formatVolume(volume: number | null | undefined): string {
+  if (volume == null) return 'N/A'
   if (volume >= 1_000_000) return `${(volume / 1_000_000).toFixed(2)}M`
   if (volume >= 1_000) return `${(volume / 1_000).toFixed(2)}K`
   return volume.toFixed(2)

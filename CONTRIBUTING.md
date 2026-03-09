@@ -14,12 +14,13 @@
                                                         ▼
                         ┌───────────────────────────────────────┐
                         │              Luzia API                │
-                        │  (Authentication, Rate Limiting,      │
-                        │   Ticker Data, Exchange Info)         │
+                        │  (via @luziadev/sdk)                  │
+                        │  Authentication, Rate Limiting,       │
+                        │  Ticker Data, Exchange Info            │
                         └───────────────────────────────────────┘
 ```
 
-The MCP server acts as a thin proxy to the Luzia API:
+The MCP server acts as a thin proxy to the Luzia API using the official SDK:
 - No direct database access required
 - Authentication handled by Luzia API
 - Rate limits applied based on user tier
@@ -37,7 +38,10 @@ cd luzia
 # Install dependencies
 bun install
 
-# Run in development mode
+# Build the MCP server
+bun run --cwd apps/mcp build
+
+# Run in development mode (watches for changes)
 bun dev:mcp
 
 # Or run with stdio for testing
@@ -52,7 +56,7 @@ cd apps/mcp
 # Build with TypeScript
 bun run build
 
-# Output: dist/index.js
+# Output: dist/index.js (runs with Node.js)
 ```
 
 ### Environment Variables
@@ -79,7 +83,7 @@ curl http://localhost:50060/health
 Use the official MCP Inspector for interactive testing:
 
 ```bash
-npx @modelcontextprotocol/inspector bunx @luziadev/mcp-server --stdio
+npx @modelcontextprotocol/inspector npx @luziadev/mcp-server --stdio
 ```
 
 This opens a web UI where you can:
@@ -94,7 +98,7 @@ For web-based AI applications, the MCP server supports HTTP transport.
 ### Running the Server
 
 ```bash
-bunx @luziadev/mcp-server
+npx @luziadev/mcp-server
 ```
 
 The server runs on `http://localhost:50060` by default.

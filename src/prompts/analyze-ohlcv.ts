@@ -4,10 +4,10 @@
  * Analyze OHLCV candlestick data for a trading pair.
  */
 
+import type { OHLCVCandle } from '@luziadev/sdk'
 import { z } from 'zod'
-import type { OhlcvCandle } from '../api-client.js'
-import { getApiClient } from '../api-client.js'
 import { createLogger } from '../logging.js'
+import { getLuziaClient } from '../sdk.js'
 
 const log = createLogger({ module: 'prompt:analyze-ohlcv' })
 
@@ -89,8 +89,8 @@ export async function generateAnalyzeOhlcvPrompt(args: Record<string, string>): 
     const periodMs = parsePeriod(period)
     const now = Date.now()
 
-    const apiClient = getApiClient()
-    const data = await apiClient.getHistory(exchange.toLowerCase(), symbol.toUpperCase(), {
+    const luzia = getLuziaClient()
+    const data = await luzia.history.get(exchange.toLowerCase(), symbol.toUpperCase(), {
       interval,
       start: now - periodMs,
       end: now,
@@ -145,32 +145,34 @@ function buildOhlcvAnalysisPrompt(
   symbol: string,
   interval: string,
   period: string,
-  candles: OhlcvCandle[]
+  candles: OHLCVCandle[]
 ): string {
   const first = candles[0]
   const last = candles[candles.length - 1]
 
-  const highCandle = candles.reduce((max, c) => (c.high > max.high ? c : max), candles[0])
-  const lowCandle = candles.reduce((min, c) => (c.low < min.low ? c : min), candles[0])
-  const totalVolume = candles.reduce((sum, c) => sum + (c.volume || 0), 0)
+  const highCandle = candles.reduce((max, c) => ((c.high ?? 0) > (max.high ?? 0) ? c : max), candles[0])
+  const lowCandle = candles.reduce((min, c) => ((c.low ?? 0) < (min.low ?? Infinity) ? c : min), candles[0])
+  const totalVolume = candles.reduce((sum, c) => sum + (c.volume ?? 0), 0)
   const avgVolume = totalVolume / candles.length
 
-  const priceChange = last.close - first.open
-  const priceChangePercent = (priceChange / first.open) * 100
+  const firstOpen = first.open ?? 0
+  const lastClose = last.close ?? 0
+  const priceChange = lastClose - firstOpen
+  const priceChangePercent = firstOpen > 0 ? (priceChange / firstOpen) * 100 : 0
 
   // Find volume spikes (> 2x average)
-  const volumeSpikes = candles.filter((c) => c.volume > avgVolume * 2).length
+  const volumeSpikes = candles.filter((c) => (c.volume ?? 0) > avgVolume * 2).length
 
   // Count bullish vs bearish candles
-  const bullish = candles.filter((c) => c.close >= c.open).length
-  const bearish = candles.filter((c) => c.close < c.open).length
+  const bullish = candles.filter((c) => (c.close ?? 0) >= (c.open ?? 0)).length
+  const bearish = candles.filter((c) => (c.close ?? 0) < (c.open ?? 0)).length
 
   let candleTable = '| Time | Open | High | Low | Close | Volume |\n'
   candleTable += '|------|------|------|-----|-------|--------|\n'
   // Show up to 20 candles for analysis
   const displayCandles = candles.slice(-20)
   for (const c of displayCandles) {
-    candleTable += `| ${formatTimestamp(c.timestamp)} | ${formatPrice(c.open)} | ${formatPrice(c.high)} | ${formatPrice(c.low)} | ${formatPrice(c.close)} | ${formatVolume(c.volume)} |\n`
+    candleTable += `| ${formatTimestamp(c.timestamp ?? '')} | ${formatPrice(c.open ?? 0)} | ${formatPrice(c.high ?? 0)} | ${formatPrice(c.low ?? 0)} | ${formatPrice(c.close ?? 0)} | ${formatVolume(c.volume ?? 0)} |\n`
   }
 
   return `Analyze the OHLCV candlestick data for ${symbol} on ${exchange.toUpperCase()}:
@@ -178,14 +180,14 @@ function buildOhlcvAnalysisPrompt(
 ## Data Overview
 - **Interval:** ${interval}
 - **Period:** ${period} (${candles.length} candles)
-- **Time Range:** ${formatTimestamp(first.timestamp)} to ${formatTimestamp(last.timestamp)}
+- **Time Range:** ${formatTimestamp(first.timestamp ?? '')} to ${formatTimestamp(last.timestamp ?? '')}
 
 ## Summary Statistics
-- **Open (first candle):** $${formatPrice(first.open)}
-- **Close (last candle):** $${formatPrice(last.close)}
+- **Open (first candle):** $${formatPrice(firstOpen)}
+- **Close (last candle):** $${formatPrice(lastClose)}
 - **Period Change:** ${priceChangePercent >= 0 ? '+' : ''}${priceChangePercent.toFixed(2)}% ($${formatPrice(Math.abs(priceChange))})
-- **Period High:** $${formatPrice(highCandle.high)} at ${formatTimestamp(highCandle.timestamp)}
-- **Period Low:** $${formatPrice(lowCandle.low)} at ${formatTimestamp(lowCandle.timestamp)}
+- **Period High:** $${formatPrice(highCandle.high ?? 0)} at ${formatTimestamp(highCandle.timestamp ?? '')}
+- **Period Low:** $${formatPrice(lowCandle.low ?? 0)} at ${formatTimestamp(lowCandle.timestamp ?? '')}
 - **Total Volume:** ${formatVolume(totalVolume)}
 - **Average Volume/Candle:** ${formatVolume(avgVolume)}
 - **Volume Spikes (>2x avg):** ${volumeSpikes}
@@ -205,11 +207,9 @@ Please provide:
 6. **Key Observations**: Any other noteworthy patterns or signals in the data.`
 }
 
-function formatTimestamp(ts: number): string {
-  return new Date(ts)
-    .toISOString()
-    .replace('T', ' ')
-    .replace(/\.\d+Z$/, 'Z')
+function formatTimestamp(ts: string): string {
+  if (!ts) return 'N/A'
+  return ts.replace('T', ' ').replace(/\.\d+Z$/, 'Z')
 }
 
 function formatPrice(price: number): string {

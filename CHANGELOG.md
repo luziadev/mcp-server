@@ -2,14 +2,22 @@
 
 All notable changes to `@luziadev/mcp-server` will be documented in this file.
 
-## [1.1.2] - 2026-02-18
+## [1.2.0] - 2026-03-09
+
+### Changed
+
+- **Migrated to `@luziadev/sdk`** - Replaced the custom `api-client.ts` with the official `@luziadev/sdk` package for all API communication. Removed the custom API client, `ApiError` class, and all internal types (`Ticker`, `Exchange`, `Market`, `OhlcvCandle`, `OhlcvResponse`).
+- **Switched runtime from Bun to Node.js** - The MCP server now runs on Node.js 20+ instead of Bun. Updated shebang (`#!/usr/bin/env node`), `engines` field, scripts (`node --watch`, `node dist/index.js`), and removed `build:bun` script.
+- **Updated all documentation for Node.js** - README, CONTRIBUTING, and `server.json` now reference `npx`/`npm` instead of `bunx`/`bun`. Simplified Claude Desktop and Claude Code setup instructions (no more Bun path configuration needed).
+- **Error handling updated to use `LuziaError`** - All tools and prompts now catch `LuziaError` from the SDK instead of the custom `ApiError` class. Error handler uses `error.code` checks (`not_found`, `rate_limit`, `unauthorized`, `server`) instead of status code methods.
+- **OHLCV types updated** - Prompts now use `OHLCVCandle` from the SDK with nullable field handling (`?? 0`, `?? null`, `?? ''`).
+
+## [1.1.1] - 2026-02-17
 
 ### Fixed
 
 - Release workflow updated for standalone repo (removed monorepo paths, fixed tag version extraction, dropped `--frozen-lockfile`)
 - Removed stale `repository.directory` from `package.json`
-- Removed unsupported `4h` candle interval from `get_history` tool and `analyze_ohlcv` prompt
-- Changed ticker `timestamp` type from `number` to `string` for consistency with API responses
 
 ### Added
 

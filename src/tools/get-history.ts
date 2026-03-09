@@ -4,10 +4,10 @@
  * Get historical OHLCV candlestick data for a cryptocurrency trading pair.
  */
 
+import type { OHLCVCandle } from '@luziadev/sdk'
 import { z } from 'zod'
-import type { OhlcvCandle } from '../api-client.js'
-import { getApiClient } from '../api-client.js'
 import { createLogger } from '../logging.js'
+import { getLuziaClient } from '../sdk.js'
 import { handleToolError, type ToolResult } from './error-handler.js'
 
 const log = createLogger({ module: 'tool:get-history' })
@@ -74,8 +74,8 @@ export async function executeGetHistory(args: unknown): Promise<ToolResult> {
 
     log.debug({ exchange, symbol, interval }, 'Fetching history')
 
-    const apiClient = getApiClient()
-    const data = await apiClient.getHistory(exchange.toLowerCase(), symbol.toUpperCase(), {
+    const luzia = getLuziaClient()
+    const data = await luzia.history.get(exchange.toLowerCase(), symbol.toUpperCase(), {
       interval,
       start,
       end,
@@ -94,12 +94,12 @@ export async function executeGetHistory(args: unknown): Promise<ToolResult> {
     }
 
     const response = formatHistoryResponse(
-      data.exchange,
-      data.symbol,
-      data.interval,
+      data.exchange ?? exchange,
+      data.symbol ?? symbol,
+      data.interval ?? interval ?? '1h',
       data.candles,
-      data.start,
-      data.end
+      data.start ?? '',
+      data.end ?? ''
     )
 
     log.debug({ exchange, symbol, count: data.count }, 'History fetched successfully')
@@ -120,20 +120,22 @@ function formatHistoryResponse(
   exchange: string,
   symbol: string,
   interval: string,
-  candles: OhlcvCandle[],
-  start: number,
-  end: number
+  candles: OHLCVCandle[],
+  start: string,
+  end: string
 ): string {
   const first = candles[0]
   const last = candles[candles.length - 1]
 
-  const highCandle = candles.reduce((max, c) => (c.high > max.high ? c : max), candles[0])
-  const lowCandle = candles.reduce((min, c) => (c.low < min.low ? c : min), candles[0])
-  const totalVolume = candles.reduce((sum, c) => sum + (c.volume || 0), 0)
-  const totalQuoteVolume = candles.reduce((sum, c) => sum + (c.quoteVolume || 0), 0)
+  const highCandle = candles.reduce((max, c) => ((c.high ?? 0) > (max.high ?? 0) ? c : max), candles[0])
+  const lowCandle = candles.reduce((min, c) => ((c.low ?? 0) < (min.low ?? Infinity) ? c : min), candles[0])
+  const totalVolume = candles.reduce((sum, c) => sum + (c.volume ?? 0), 0)
+  const totalQuoteVolume = candles.reduce((sum, c) => sum + (c.quoteVolume ?? 0), 0)
 
-  const priceChange = last.close - first.open
-  const priceChangePercent = (priceChange / first.open) * 100
+  const firstOpen = first.open ?? 0
+  const lastClose = last.close ?? 0
+  const priceChange = lastClose - firstOpen
+  const priceChangePercent = firstOpen > 0 ? (priceChange / firstOpen) * 100 : 0
 
   const lines: string[] = [
     `## ${symbol} OHLCV on ${exchange.toUpperCase()}`,
@@ -141,11 +143,11 @@ function formatHistoryResponse(
     `**Interval:** ${interval} | **Candles:** ${candles.length} | **Range:** ${formatTimestamp(start)} to ${formatTimestamp(end)}`,
     '',
     '### Summary',
-    `- **Open (first):** ${formatPrice(first.open)}`,
-    `- **Close (last):** ${formatPrice(last.close)}`,
+    `- **Open (first):** ${formatPrice(firstOpen)}`,
+    `- **Close (last):** ${formatPrice(lastClose)}`,
     `- **Period Change:** ${formatChange(priceChange, priceChangePercent)}`,
-    `- **Period High:** ${formatPrice(highCandle.high)} (${formatTimestamp(highCandle.timestamp)})`,
-    `- **Period Low:** ${formatPrice(lowCandle.low)} (${formatTimestamp(lowCandle.timestamp)})`,
+    `- **Period High:** ${formatPrice(highCandle.high ?? 0)} (${formatTimestamp(highCandle.timestamp ?? '')})`,
+    `- **Period Low:** ${formatPrice(lowCandle.low ?? 0)} (${formatTimestamp(lowCandle.timestamp ?? '')})`,
     `- **Total Volume:** ${formatVolume(totalVolume)}`,
     `- **Total Quote Volume:** ${formatVolume(totalQuoteVolume)}`,
     '',
@@ -159,7 +161,7 @@ function formatHistoryResponse(
   const recentCandles = candles.slice(-10)
   for (const c of recentCandles) {
     lines.push(
-      `| ${formatTimestamp(c.timestamp)} | ${formatPrice(c.open)} | ${formatPrice(c.high)} | ${formatPrice(c.low)} | ${formatPrice(c.close)} | ${formatVolume(c.volume)} |`
+      `| ${formatTimestamp(c.timestamp ?? '')} | ${formatPrice(c.open ?? 0)} | ${formatPrice(c.high ?? 0)} | ${formatPrice(c.low ?? 0)} | ${formatPrice(c.close ?? 0)} | ${formatVolume(c.volume ?? 0)} |`
     )
   }
 
@@ -170,11 +172,9 @@ function formatHistoryResponse(
   return lines.join('\n')
 }
 
-function formatTimestamp(ts: number): string {
-  return new Date(ts)
-    .toISOString()
-    .replace('T', ' ')
-    .replace(/\.\d+Z$/, 'Z')
+function formatTimestamp(ts: string): string {
+  if (!ts) return 'N/A'
+  return ts.replace('T', ' ').replace(/\.\d+Z$/, 'Z')
 }
 
 function formatPrice(price: number): string {

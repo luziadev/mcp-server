@@ -14,8 +14,9 @@ import {
   ListToolsRequestSchema,
   ReadResourceRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js'
-import { getApiClient } from './api-client.js'
+import { LuziaError } from '@luziadev/sdk'
 import { createLogger } from './logging.js'
+import { getLuziaClient } from './sdk.js'
 import {
   analyzeOhlcvPrompt,
   analyzePricePrompt,
@@ -186,8 +187,8 @@ function registerResourceHandlers(server: Server): void {
     if (uri === 'luzia://exchanges') {
       // Fetch exchanges from API
       try {
-        const apiClient = getApiClient()
-        const exchanges = await apiClient.getExchanges()
+        const luzia = getLuziaClient()
+        const exchanges = await luzia.exchanges.list()
         const exchangeIds = exchanges.map((e) => e.id)
 
         return {
@@ -222,31 +223,31 @@ function registerResourceHandlers(server: Server): void {
       const normalizedSymbol = symbol.replace('-', '/')
 
       try {
-        const apiClient = getApiClient()
-        const ticker = await apiClient.getTicker(exchange, normalizedSymbol)
-
-        if (ticker) {
-          return {
-            contents: [
-              {
-                uri,
-                mimeType: 'application/json',
-                text: JSON.stringify(ticker, null, 2),
-              },
-            ],
-          }
-        }
+        const luzia = getLuziaClient()
+        const ticker = await luzia.tickers.get(exchange, normalizedSymbol)
 
         return {
           contents: [
             {
               uri,
-              mimeType: 'text/plain',
-              text: `Ticker not found for ${normalizedSymbol} on ${exchange}`,
+              mimeType: 'application/json',
+              text: JSON.stringify(ticker, null, 2),
             },
           ],
         }
       } catch (error) {
+        if (error instanceof LuziaError && error.code === 'not_found') {
+          return {
+            contents: [
+              {
+                uri,
+                mimeType: 'text/plain',
+                text: `Ticker not found for ${normalizedSymbol} on ${exchange}`,
+              },
+            ],
+          }
+        }
+
         log.error({ error, exchange, symbol: normalizedSymbol }, 'Failed to fetch ticker resource')
         return {
           contents: [
