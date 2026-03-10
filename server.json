@@ -1,9 +1,9 @@
 {
-  "$schema": "https://cdn.jsdelivr.net/npm/@anthropic-ai/mcp-server-registry@latest/schema.json",
-  "name": "@luziadev/mcp-server",
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.hvasconcelos/luzia",
   "displayName": "Luzia MCP Server",
-  "description": "Access real-time cryptocurrency prices from multiple exchanges (Binance, Coinbase, Kraken, OKX, Bybit) through the Luzia API",
-  "version": "1.2.0",
+  "description": "Real-time crypto prices from Binance, Coinbase, Kraken, OKX, and Bybit",
+  "version": "1.2.1",
   "author": {
     "name": "Luzia",
     "email": "hello@luzia.dev",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/luziadev/luzia",
+    "url": "https://github.com/luziadev/mcp-server",
     "directory": "apps/mcp"
   },
   "license": "MIT",
@@ -157,6 +157,25 @@
       ]
     }
   ],
+  "packages": [
+      {
+        "registryType": "npm",
+        "identifier": "@luziadev/mcp-server",
+        "version": "1.2.1",
+        "transport": {
+          "type": "stdio"
+        },
+        "environmentVariables": [
+          {
+            "name": "LUZIA_API_KEY",
+            "description": "Your Luzia API key (lz_ prefix)",
+            "isRequired": true,
+            "format": "string",
+            "isSecret": true
+          }
+        ]
+      }
+    ],
   "transports": ["stdio", "http"],
   "runtimeRequirements": {
     "node": ">=20.0.0"
