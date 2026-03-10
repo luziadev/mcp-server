@@ -3,7 +3,7 @@
   "name": "@luziadev/mcp-server",
   "displayName": "Luzia MCP Server",
   "description": "Access real-time cryptocurrency prices from multiple exchanges (Binance, Coinbase, Kraken, OKX, Bybit) through the Luzia API",
-  "version": "0.9.0",
+  "version": "1.2.0",
   "author": {
     "name": "Luzia",
     "email": "hello@luzia.dev",
@@ -16,7 +16,7 @@
   },
   "license": "MIT",
   "homepage": "https://luzia.dev",
-  "categories": ["finance", "cryptocurrency", "data"],
+  "categories": ["finance", "cryptocurrency", "pricing"],
   "keywords": [
     "crypto",
     "cryptocurrency",

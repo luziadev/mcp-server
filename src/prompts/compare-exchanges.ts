@@ -46,6 +46,7 @@ const inputSchema = z.object({
 /**
  * Generate the compare_exchanges prompt
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: multi-exchange fetch with error handling per exchange
 export async function generateCompareExchangesPrompt(args: Record<string, string>): Promise<{
   messages: Array<{ role: 'user'; content: { type: 'text'; text: string } }>
 }> {

@@ -52,7 +52,7 @@ export async function generateAnalyzePricePrompt(args: Record<string, string>): 
 
     log.debug({ exchange, symbol }, 'Generating price analysis prompt')
 
-    let ticker
+    let ticker: Awaited<ReturnType<ReturnType<typeof getLuziaClient>['tickers']['get']>>
     try {
       const luzia = getLuziaClient()
       ticker = await luzia.tickers.get(exchange.toLowerCase(), symbol.toUpperCase())
@@ -104,6 +104,7 @@ export async function generateAnalyzePricePrompt(args: Record<string, string>): 
 /**
  * Build the analysis prompt with ticker data
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: template builder with many nullable fields
 function buildAnalysisPrompt(ticker: {
   symbol?: string
   exchange?: string

@@ -53,7 +53,7 @@ export async function executeGetTicker(args: unknown): Promise<ToolResult> {
 
     log.debug({ exchange, symbol }, 'Fetching ticker')
 
-    let ticker
+    let ticker: Awaited<ReturnType<ReturnType<typeof getLuziaClient>['tickers']['get']>>
     try {
       const luzia = getLuziaClient()
       ticker = await luzia.tickers.get(exchange.toLowerCase(), symbol.toUpperCase())

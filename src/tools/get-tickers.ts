@@ -119,7 +119,9 @@ function formatTickersResponse(
     const change = formatChange(ticker.changePercent ?? null)
     const volume = formatVolume(ticker.volume ?? null)
 
-    lines.push(`| ${ticker.symbol ?? 'N/A'} | ${ticker.exchange ?? 'N/A'} | ${price} | ${change} | ${volume} |`)
+    lines.push(
+      `| ${ticker.symbol ?? 'N/A'} | ${ticker.exchange ?? 'N/A'} | ${price} | ${change} | ${volume} |`
+    )
   }
 
   lines.push('')

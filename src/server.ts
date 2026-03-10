@@ -5,6 +5,7 @@
  * This server acts as a thin proxy to the Luzia API.
  */
 
+import { LuziaError } from '@luziadev/sdk'
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import {
   CallToolRequestSchema,
@@ -14,9 +15,7 @@ import {
   ListToolsRequestSchema,
   ReadResourceRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js'
-import { LuziaError } from '@luziadev/sdk'
 import { createLogger } from './logging.js'
-import { getLuziaClient } from './sdk.js'
 import {
   analyzeOhlcvPrompt,
   analyzePricePrompt,
@@ -25,6 +24,7 @@ import {
   generateAnalyzePricePrompt,
   generateCompareExchangesPrompt,
 } from './prompts/index.js'
+import { getLuziaClient } from './sdk.js'
 import {
   executeGetExchanges,
   executeGetHistory,

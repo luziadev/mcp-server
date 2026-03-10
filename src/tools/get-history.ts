@@ -127,8 +127,14 @@ function formatHistoryResponse(
   const first = candles[0]
   const last = candles[candles.length - 1]
 
-  const highCandle = candles.reduce((max, c) => ((c.high ?? 0) > (max.high ?? 0) ? c : max), candles[0])
-  const lowCandle = candles.reduce((min, c) => ((c.low ?? 0) < (min.low ?? Infinity) ? c : min), candles[0])
+  const highCandle = candles.reduce(
+    (max, c) => ((c.high ?? 0) > (max.high ?? 0) ? c : max),
+    candles[0]
+  )
+  const lowCandle = candles.reduce(
+    (min, c) => ((c.low ?? 0) < (min.low ?? Infinity) ? c : min),
+    candles[0]
+  )
   const totalVolume = candles.reduce((sum, c) => sum + (c.volume ?? 0), 0)
   const totalQuoteVolume = candles.reduce((sum, c) => sum + (c.quoteVolume ?? 0), 0)
 

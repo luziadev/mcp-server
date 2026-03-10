@@ -1,8 +1,9 @@
 {
   "name": "@luziadev/mcp-server",
-  "version": "1.1.2",
+  "version": "1.2.1",
   "description": "MCP server for cryptocurrency pricing data - access real-time ticker prices, exchanges, and markets from AI assistants",
   "type": "module",
+  "mcpName": "io.github.luziadev/luzia",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
