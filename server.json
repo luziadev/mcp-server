@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.hvasconcelos/luzia",
-  "displayName": "Luzia MCP Server",
+  "name": "io.github.luziadev/luzia",
+  "displayName": "Luzia Crypto Prices",
   "description": "Real-time crypto prices from Binance, Coinbase, Kraken, OKX, and Bybit",
   "version": "1.2.1",
   "author": {
@@ -10,9 +10,8 @@
     "url": "https://luzia.dev"
   },
   "repository": {
-    "type": "git",
     "url": "https://github.com/luziadev/mcp-server",
-    "directory": "apps/mcp"
+    "source": "github"
   },
   "license": "MIT",
   "homepage": "https://luzia.dev",
