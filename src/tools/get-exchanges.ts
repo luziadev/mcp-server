@@ -15,7 +15,8 @@ const log = createLogger({ module: 'tool:get-exchanges' })
  */
 export const getExchangesTool = {
   name: 'get_exchanges',
-  description: 'List all supported cryptocurrency exchanges with their current status.',
+  description:
+    'List all supported cryptocurrency exchanges with their current status. Cost: $0.0001 per call.',
   inputSchema: {
     type: 'object' as const,
     properties: {},

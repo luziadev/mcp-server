@@ -17,7 +17,7 @@ const log = createLogger({ module: 'tool:get-markets' })
 export const getMarketsTool = {
   name: 'get_markets',
   description:
-    'List available trading pairs (markets) for a specific exchange. Can filter by quote currency.',
+    'List available trading pairs (markets) for a specific exchange. Can filter by quote currency. Cost: $0.0002 per call.',
   inputSchema: {
     type: 'object' as const,
     properties: {

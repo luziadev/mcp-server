@@ -2,7 +2,7 @@
  * Shared error handling for MCP tools
  */
 
-import { LuziaError } from '@luziadev/sdk'
+import { InsufficientBalanceError, LuziaError } from '@luziadev/sdk'
 import { z } from 'zod'
 
 export type ToolResult = {
@@ -20,6 +20,19 @@ export function handleToolError(error: unknown, toolName: string): ToolResult {
         {
           type: 'text',
           text: `Invalid input: ${error.errors.map((e) => e.message).join(', ')}`,
+        },
+      ],
+      isError: true,
+    }
+  }
+
+  // Handle insufficient balance before generic LuziaError (since it's a subclass)
+  if (error instanceof InsufficientBalanceError) {
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `Insufficient balance ($${error.balance} remaining). Top up your account to continue making requests: ${error.topUpUrl}`,
         },
       ],
       isError: true,

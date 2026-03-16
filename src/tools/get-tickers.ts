@@ -17,7 +17,7 @@ const log = createLogger({ module: 'tool:get-tickers' })
 export const getTickersTool = {
   name: 'get_tickers',
   description:
-    'Get real-time price data for multiple cryptocurrency pairs, optionally filtered by exchange or specific symbols. Returns a summary of prices with 24h changes.',
+    'Get real-time price data for multiple cryptocurrency pairs, optionally filtered by exchange or specific symbols. Returns a summary of prices with 24h changes. Cost: $0.0004 per symbol.',
   inputSchema: {
     type: 'object' as const,
     properties: {
