@@ -35,7 +35,7 @@ export async function executeGetBalance(): Promise<ToolResult> {
 
     const response = formatBalanceResponse(balance)
 
-    log.debug({ balance_cents: balance.balance_cents }, 'Balance fetched successfully')
+    log.debug({ balance_units: balance.balance_units }, 'Balance fetched successfully')
 
     return {
       content: [{ type: 'text', text: response }],
@@ -51,14 +51,14 @@ export async function executeGetBalance(): Promise<ToolResult> {
  */
 function formatBalanceResponse(balance: {
   balance_usd: string
-  balance_cents: number
+  balance_units: number
   lifetime_spent_usd: string
-  lifetime_spent_cents: number
+  lifetime_spent_units: number
   free_credit_usd: string
   top_up_url: string
 }): string {
-  const isLow = balance.balance_cents < 100
-  const isDepleted = balance.balance_cents <= 0
+  const isLow = balance.balance_units < 10_000
+  const isDepleted = balance.balance_units <= 0
   const statusIcon = isDepleted ? '🔴' : isLow ? '🟠' : '🟢'
 
   const lines: string[] = [
