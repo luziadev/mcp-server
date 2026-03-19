@@ -26,14 +26,18 @@ import {
 } from './prompts/index.js'
 import { getLuziaClient } from './sdk.js'
 import {
+  executeGetBalance,
   executeGetExchanges,
   executeGetHistory,
   executeGetMarkets,
+  executeGetPricing,
   executeGetTicker,
   executeGetTickers,
+  getBalanceTool,
   getExchangesTool,
   getHistoryTool,
   getMarketsTool,
+  getPricingTool,
   getTickersTool,
   getTickerTool,
 } from './tools/index.js'
@@ -81,7 +85,15 @@ function registerToolHandlers(server: Server): void {
     log.debug({}, 'Listing tools')
 
     return {
-      tools: [getTickerTool, getTickersTool, getHistoryTool, getExchangesTool, getMarketsTool],
+      tools: [
+        getTickerTool,
+        getTickersTool,
+        getHistoryTool,
+        getExchangesTool,
+        getMarketsTool,
+        getBalanceTool,
+        getPricingTool,
+      ],
     }
   })
 
@@ -106,6 +118,12 @@ function registerToolHandlers(server: Server): void {
 
       case 'get_history':
         return executeGetHistory(args)
+
+      case 'get_balance':
+        return executeGetBalance()
+
+      case 'get_pricing':
+        return executeGetPricing()
 
       default:
         return {

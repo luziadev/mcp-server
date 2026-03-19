@@ -18,7 +18,7 @@ const log = createLogger({ module: 'tool:get-ticker' })
 export const getTickerTool = {
   name: 'get_ticker',
   description:
-    'Get real-time price data for a specific cryptocurrency trading pair on a given exchange. Returns current price, bid/ask, 24h high/low, volume, and percentage change.',
+    'Get real-time price data for a specific cryptocurrency trading pair on a given exchange. Returns current price, bid/ask, 24h high/low, volume, and percentage change. Cost: $0.0005 per call.',
   inputSchema: {
     type: 'object' as const,
     properties: {

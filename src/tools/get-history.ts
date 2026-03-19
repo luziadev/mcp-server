@@ -18,7 +18,7 @@ const log = createLogger({ module: 'tool:get-history' })
 export const getHistoryTool = {
   name: 'get_history',
   description:
-    'Get historical OHLCV (Open, High, Low, Close, Volume) candlestick data for a cryptocurrency trading pair. Returns time-series candle data useful for technical analysis, charting, and trend detection.',
+    'Get historical OHLCV (Open, High, Low, Close, Volume) candlestick data for a cryptocurrency trading pair. Returns time-series candle data useful for technical analysis, charting, and trend detection. Cost: $0.001-$0.005 per call depending on limit.',
   inputSchema: {
     type: 'object' as const,
     properties: {
