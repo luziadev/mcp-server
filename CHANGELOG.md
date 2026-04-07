@@ -2,6 +2,17 @@
 
 All notable changes to `@luziadev/mcp-server` will be documented in this file.
 
+## [1.2.2] - 2026-04-07
+
+### Added
+
+- **`get_history` tool in `server.json`** - Added the `get_history` tool definition to the MCP server manifest, making it discoverable by MCP registries and clients.
+- **`get_history` in HTTP health endpoint** - Listed `get_history` in the tools array returned by the health/info endpoint.
+
+### Changed
+
+- **Bumped version to 1.2.2** across `package.json`, `server.json` (top-level and packages).
+
 ## [1.2.0] - 2026-03-09
 
 ### Changed

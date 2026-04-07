@@ -3,7 +3,7 @@
   "name": "io.github.luziadev/luzia",
   "displayName": "Luzia Crypto Prices",
   "description": "Real-time crypto prices from Binance, Coinbase, Kraken, OKX, and Bybit",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "author": {
     "name": "Luzia",
     "email": "hello@luzia.dev",
@@ -125,6 +125,41 @@
         },
         "required": ["exchange"]
       }
+    },
+    {
+      "name": "get_history",
+      "description": "Get historical OHLCV (Open, High, Low, Close, Volume) candlestick data for a cryptocurrency trading pair. Returns time-series candle data useful for technical analysis, charting, and trend detection.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "exchange": {
+            "type": "string",
+            "description": "Exchange to fetch history from (e.g., 'binance', 'coinbase', 'kraken')"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Trading pair symbol in normalized format (e.g., 'BTC/USDT', 'ETH/USD')"
+          },
+          "interval": {
+            "type": "string",
+            "description": "Candle interval (default: '1h')",
+            "enum": ["1m", "5m", "15m", "1h", "1d"]
+          },
+          "start": {
+            "type": "number",
+            "description": "Start timestamp in Unix milliseconds (default: 24h ago)"
+          },
+          "end": {
+            "type": "number",
+            "description": "End timestamp in Unix milliseconds (default: now)"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum number of candles to return (default: 300, max: 500)"
+          }
+        },
+        "required": ["exchange", "symbol"]
+      }
     }
   ],
   "prompts": [
@@ -157,24 +192,24 @@
     }
   ],
   "packages": [
-      {
-        "registryType": "npm",
-        "identifier": "@luziadev/mcp-server",
-        "version": "1.2.1",
-        "transport": {
-          "type": "stdio"
-        },
-        "environmentVariables": [
-          {
-            "name": "LUZIA_API_KEY",
-            "description": "Your Luzia API key (lz_ prefix)",
-            "isRequired": true,
-            "format": "string",
-            "isSecret": true
-          }
-        ]
-      }
-    ],
+    {
+      "registryType": "npm",
+      "identifier": "@luziadev/mcp-server",
+      "version": "1.2.2",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "LUZIA_API_KEY",
+          "description": "Your Luzia API key (lz_ prefix)",
+          "isRequired": true,
+          "format": "string",
+          "isSecret": true
+        }
+      ]
+    }
+  ],
   "transports": ["stdio", "http"],
   "runtimeRequirements": {
     "node": ">=20.0.0"

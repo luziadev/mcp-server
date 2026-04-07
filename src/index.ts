@@ -115,7 +115,7 @@ async function startHTTPServer(): Promise<void> {
         mcp: '/mcp',
         health: '/health',
       },
-      tools: ['get_ticker', 'get_tickers', 'get_exchanges', 'get_markets'],
+      tools: ['get_ticker', 'get_tickers', 'get_history', 'get_exchanges', 'get_markets'],
       prompts: ['analyze_price_movement', 'compare_exchanges'],
     })
   })
