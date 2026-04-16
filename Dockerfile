@@ -5,10 +5,10 @@
 FROM node:22-slim AS builder
 WORKDIR /app
 
-COPY apps/mcp/package.json apps/mcp/package-lock.json apps/mcp/tsconfig.json ./
+COPY package.json package-lock.json tsconfig.json ./
 RUN npm ci --no-audit --no-fund
 
-COPY apps/mcp/src ./src
+COPY src ./src
 RUN npx tsc && chmod +x dist/index.js
 
 # Production stage — prod deps only, non-root user.
