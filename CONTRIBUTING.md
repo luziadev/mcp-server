@@ -64,7 +64,7 @@ bun run build
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `NODE_ENV` | Environment mode | `development` |
-| `MCP_PORT` | HTTP server port | `50060` |
+| `MCP_PORT` | HTTP server port | `50080` |
 | `LOG_LEVEL` | Logging level (trace/debug/info/warn/error) | `info` |
 | `LUZIA_API_URL` | Luzia API base URL | `http://localhost:3000` |
 | `LUZIA_API_KEY` | Luzia API key (required) | - |
@@ -74,7 +74,7 @@ bun run build
 ### Health Check
 
 ```bash
-curl http://localhost:50060/health
+curl http://localhost:50080/health
 # {"status":"ok","timestamp":"..."}
 ```
 
@@ -101,7 +101,7 @@ For web-based AI applications, the MCP server supports HTTP transport.
 npx @luziadev/mcp-server
 ```
 
-The server runs on `http://localhost:50060` by default.
+The server runs on `http://localhost:50080` by default.
 
 ### Endpoints
 

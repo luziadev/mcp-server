@@ -15,6 +15,7 @@ import {
   ListToolsRequestSchema,
   ReadResourceRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js'
+import { getCurrentApiKey } from './context.js'
 import { createLogger } from './logging.js'
 import {
   analyzeOhlcvPrompt,
@@ -24,7 +25,7 @@ import {
   generateAnalyzePricePrompt,
   generateCompareExchangesPrompt,
 } from './prompts/index.js'
-import { getLuziaClient } from './sdk.js'
+import { getLuziaClientForKey } from './sdk.js'
 import {
   executeGetExchanges,
   executeGetHistory,
@@ -187,7 +188,7 @@ function registerResourceHandlers(server: Server): void {
     if (uri === 'luzia://exchanges') {
       // Fetch exchanges from API
       try {
-        const luzia = getLuziaClient()
+        const luzia = getLuziaClientForKey(getCurrentApiKey())
         const exchanges = await luzia.exchanges.list()
         const exchangeIds = exchanges.map((e) => e.id)
 
@@ -223,7 +224,7 @@ function registerResourceHandlers(server: Server): void {
       const normalizedSymbol = symbol.replace('-', '/')
 
       try {
-        const luzia = getLuziaClient()
+        const luzia = getLuziaClientForKey(getCurrentApiKey())
         const ticker = await luzia.tickers.get(exchange, normalizedSymbol)
 
         return {

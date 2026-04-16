@@ -5,8 +5,9 @@
  */
 
 import { LuziaError } from '@luziadev/sdk'
+import { getCurrentApiKey } from '../context.js'
 import { createLogger } from '../logging.js'
-import { getLuziaClient } from '../sdk.js'
+import { getLuziaClientForKey } from '../sdk.js'
 
 const log = createLogger({ module: 'tool:get-exchanges' })
 
@@ -32,7 +33,7 @@ export async function executeGetExchanges(): Promise<{
   try {
     log.debug({}, 'Fetching exchanges')
 
-    const luzia = getLuziaClient()
+    const luzia = getLuziaClientForKey(getCurrentApiKey())
     const exchanges = await luzia.exchanges.list()
 
     // Format the response

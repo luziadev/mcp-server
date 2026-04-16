@@ -3,7 +3,7 @@
   "name": "io.github.luziadev/luzia",
   "displayName": "Luzia Crypto Prices",
   "description": "Real-time crypto prices from Binance, Coinbase, Kraken, OKX, and Bybit",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "author": {
     "name": "Luzia",
     "email": "hello@luzia.dev",
@@ -29,6 +29,15 @@
     "exchange"
   ],
   "installation": {
+    "remote": {
+      "url": "https://mcp.luzia.dev/mcp",
+      "transport": "streamable-http",
+      "authentication": {
+        "type": "bearer",
+        "header": "Authorization",
+        "description": "Your Luzia API key (lz_...)"
+      }
+    },
     "npm": {
       "package": "@luziadev/mcp-server",
       "command": "npx",
@@ -55,7 +64,7 @@
         "name": "MCP_PORT",
         "description": "HTTP server port (for HTTP/SSE mode)",
         "type": "number",
-        "default": 50060
+        "default": 50080
       },
       {
         "name": "LOG_LEVEL",
@@ -193,9 +202,21 @@
   ],
   "packages": [
     {
+      "registryType": "remote",
+      "transport": {
+        "type": "streamable-http",
+        "url": "https://mcp.luzia.dev/mcp"
+      },
+      "authentication": {
+        "type": "bearer",
+        "header": "Authorization",
+        "description": "Your Luzia API key (lz_ prefix)"
+      }
+    },
+    {
       "registryType": "npm",
       "identifier": "@luziadev/mcp-server",
-      "version": "1.2.2",
+      "version": "1.3.0",
       "transport": {
         "type": "stdio"
       },

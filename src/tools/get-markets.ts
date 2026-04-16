@@ -5,8 +5,9 @@
  */
 
 import { z } from 'zod'
+import { getCurrentApiKey } from '../context.js'
 import { createLogger } from '../logging.js'
-import { getLuziaClient } from '../sdk.js'
+import { getLuziaClientForKey } from '../sdk.js'
 import { handleToolError, type ToolResult } from './error-handler.js'
 
 const log = createLogger({ module: 'tool:get-markets' })
@@ -57,7 +58,7 @@ export async function executeGetMarkets(args: unknown): Promise<ToolResult> {
 
     log.debug({ exchange, quote, limit }, 'Fetching markets')
 
-    const luzia = getLuziaClient()
+    const luzia = getLuziaClientForKey(getCurrentApiKey())
     const result = await luzia.markets.list(exchange, {
       quote,
       active: true,

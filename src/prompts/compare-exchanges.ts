@@ -6,8 +6,9 @@
 
 import { LuziaError } from '@luziadev/sdk'
 import { z } from 'zod'
+import { getCurrentApiKey } from '../context.js'
 import { createLogger } from '../logging.js'
-import { getLuziaClient } from '../sdk.js'
+import { getLuziaClientForKey } from '../sdk.js'
 
 const log = createLogger({ module: 'prompt:compare-exchanges' })
 
@@ -60,7 +61,7 @@ export async function generateCompareExchangesPrompt(args: Record<string, string
 
     log.debug({ symbol, exchanges: exchangeList }, 'Generating exchange comparison prompt')
 
-    const luzia = getLuziaClient()
+    const luzia = getLuziaClientForKey(getCurrentApiKey())
 
     // Fetch ticker from each exchange
     const tickerResults: Array<{

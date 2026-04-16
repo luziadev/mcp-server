@@ -6,8 +6,9 @@
 
 import type { OHLCVCandle } from '@luziadev/sdk'
 import { z } from 'zod'
+import { getCurrentApiKey } from '../context.js'
 import { createLogger } from '../logging.js'
-import { getLuziaClient } from '../sdk.js'
+import { getLuziaClientForKey } from '../sdk.js'
 import { handleToolError, type ToolResult } from './error-handler.js'
 
 const log = createLogger({ module: 'tool:get-history' })
@@ -74,7 +75,7 @@ export async function executeGetHistory(args: unknown): Promise<ToolResult> {
 
     log.debug({ exchange, symbol, interval }, 'Fetching history')
 
-    const luzia = getLuziaClient()
+    const luzia = getLuziaClientForKey(getCurrentApiKey())
     const data = await luzia.history.get(exchange.toLowerCase(), symbol.toUpperCase(), {
       interval,
       start,

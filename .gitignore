@@ -56,3 +56,5 @@ scripts/load/reports/*.json
 bun.lockb
 
 scripts/load/reports/
+.mcpregistry_github_token
+.mcpregistry_registry_token

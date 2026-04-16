@@ -6,8 +6,9 @@
 
 import type { OHLCVCandle } from '@luziadev/sdk'
 import { z } from 'zod'
+import { getCurrentApiKey } from '../context.js'
 import { createLogger } from '../logging.js'
-import { getLuziaClient } from '../sdk.js'
+import { getLuziaClientForKey } from '../sdk.js'
 
 const log = createLogger({ module: 'prompt:analyze-ohlcv' })
 
@@ -89,7 +90,7 @@ export async function generateAnalyzeOhlcvPrompt(args: Record<string, string>): 
     const periodMs = parsePeriod(period)
     const now = Date.now()
 
-    const luzia = getLuziaClient()
+    const luzia = getLuziaClientForKey(getCurrentApiKey())
     const data = await luzia.history.get(exchange.toLowerCase(), symbol.toUpperCase(), {
       interval,
       start: now - periodMs,

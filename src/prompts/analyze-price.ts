@@ -6,8 +6,9 @@
 
 import { LuziaError } from '@luziadev/sdk'
 import { z } from 'zod'
+import { getCurrentApiKey } from '../context.js'
 import { createLogger } from '../logging.js'
-import { getLuziaClient } from '../sdk.js'
+import { getLuziaClientForKey } from '../sdk.js'
 
 const log = createLogger({ module: 'prompt:analyze-price' })
 
@@ -52,9 +53,9 @@ export async function generateAnalyzePricePrompt(args: Record<string, string>): 
 
     log.debug({ exchange, symbol }, 'Generating price analysis prompt')
 
-    let ticker: Awaited<ReturnType<ReturnType<typeof getLuziaClient>['tickers']['get']>>
+    let ticker: Awaited<ReturnType<ReturnType<typeof getLuziaClientForKey>['tickers']['get']>>
     try {
-      const luzia = getLuziaClient()
+      const luzia = getLuziaClientForKey(getCurrentApiKey())
       ticker = await luzia.tickers.get(exchange.toLowerCase(), symbol.toUpperCase())
     } catch (error) {
       if (error instanceof LuziaError && error.code === 'not_found') {

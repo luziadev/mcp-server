@@ -11,4 +11,4 @@ restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
 
 [service]
-internalPort = 50004
+internalPort = 50080

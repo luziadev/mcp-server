@@ -1,7 +1,9 @@
 /**
- * Luzia SDK Singleton
+ * Luzia SDK factory.
  *
- * Provides a shared Luzia SDK client instance for all MCP tools and prompts.
+ * In remote mode each user presents their own API key, so we cache one SDK
+ * client per key rather than sharing a single singleton. The cache is bounded
+ * to avoid leaking clients for one-off keys.
  */
 
 import { Luzia } from '@luziadev/sdk'
@@ -10,18 +12,29 @@ import { createLogger } from './logging.js'
 
 const log = createLogger({ module: 'sdk' })
 
-let instance: Luzia | null = null
+const MAX_CLIENTS = 500
+const clients = new Map<string, Luzia>()
 
-/**
- * Get the shared Luzia SDK client instance
- */
-export function getLuziaClient(): Luzia {
-  if (!instance) {
-    instance = new Luzia({
-      apiKey: env.api.key,
-      baseUrl: env.api.url,
-    })
-    log.info({ baseUrl: env.api.url }, 'Luzia SDK client initialized')
+export function getLuziaClientForKey(apiKey: string): Luzia {
+  const existing = clients.get(apiKey)
+  if (existing) {
+    // refresh LRU order
+    clients.delete(apiKey)
+    clients.set(apiKey, existing)
+    return existing
   }
-  return instance
+
+  const client = new Luzia({
+    apiKey,
+    baseUrl: env.api.url,
+  })
+  clients.set(apiKey, client)
+
+  if (clients.size > MAX_CLIENTS) {
+    const oldest = clients.keys().next().value
+    if (oldest !== undefined) clients.delete(oldest)
+  }
+
+  log.debug({ baseUrl: env.api.url, cached: clients.size }, 'Luzia SDK client created')
+  return client
 }

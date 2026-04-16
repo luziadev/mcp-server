@@ -5,8 +5,9 @@
  */
 
 import { z } from 'zod'
+import { getCurrentApiKey } from '../context.js'
 import { createLogger } from '../logging.js'
-import { getLuziaClient } from '../sdk.js'
+import { getLuziaClientForKey } from '../sdk.js'
 import { handleToolError, type ToolResult } from './error-handler.js'
 
 const log = createLogger({ module: 'tool:get-tickers' })
@@ -58,7 +59,7 @@ export async function executeGetTickers(args: unknown): Promise<ToolResult> {
 
     log.debug({ exchange, symbols, limit }, 'Fetching tickers')
 
-    const luzia = getLuziaClient()
+    const luzia = getLuziaClientForKey(getCurrentApiKey())
 
     // Use the filtered endpoint
     const result = await luzia.tickers.listFiltered({
