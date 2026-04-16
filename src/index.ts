@@ -195,6 +195,11 @@ async function startHTTPServer(): Promise<void> {
     })
   })
 
+  // mcp-remote and other OAuth-aware clients probe /.well-known/* before falling
+  // back to Bearer auth. Return JSON 404s so their OAuth JSON parser doesn't
+  // choke on Hono's default plain-text "404 Not Found".
+  app.notFound((c) => c.json({ error: 'not_found', path: c.req.path }, 404))
+
   // Evict idle sessions so memory stays bounded.
   const sweepTimer = setInterval(() => {
     const cutoff = Date.now() - SESSION_IDLE_MS
