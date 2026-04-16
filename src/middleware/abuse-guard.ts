@@ -20,9 +20,7 @@ type Entry = {
 
 const entries = new Map<string, Entry>()
 
-export type AbuseCheck =
-  | { blocked: false }
-  | { blocked: true; retryAfterSeconds: number }
+export type AbuseCheck = { blocked: false } | { blocked: true; retryAfterSeconds: number }
 
 export function checkAbuse(ip: string, now: number = Date.now()): AbuseCheck {
   const entry = entries.get(ip)

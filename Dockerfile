@@ -1,4 +1,4 @@
-# Build stage
+# Build stage (bun handles the monorepo workspace + frozen lockfile install)
 FROM oven/bun:1.3.10 AS builder
 
 WORKDIR /app
@@ -25,18 +25,25 @@ COPY packages/metrics/package.json ./packages/metrics/
 COPY packages/sdk/package.json ./packages/sdk/
 COPY packages/xconnectors/package.json ./packages/xconnectors/
 
-# Install dependencies (using --ignore-scripts to skip platform-specific postinstall)
+# Install dependencies (ignore-scripts to skip platform-specific postinstall)
 RUN bun install --frozen-lockfile --ignore-scripts
 
-# Copy MCP source (no internal workspace dependencies needed)
+# @luziadev/sdk is a bun workspace package (packages/sdk) — bun symlinks it
+# into node_modules during install, so the source must be present and built
+# before we can build the MCP server.
+COPY packages/sdk ./packages/sdk
 COPY apps/mcp ./apps/mcp
 
-# Build the MCP server
+# Build the SDK first (tsc → packages/sdk/dist) so MCP can import from it.
+WORKDIR /app/packages/sdk
+RUN bun run build
+
+# Build the MCP server (tsc emits to apps/mcp/dist)
 WORKDIR /app/apps/mcp
 RUN bun run build
 
-# Production stage
-FROM oven/bun:1.3.10-slim AS runner
+# Production stage — Node 22 (the app runs on node, `bun run start` just shells out to node)
+FROM node:22-slim AS runner
 
 WORKDIR /app
 
@@ -48,10 +55,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl \
 RUN groupadd --system --gid 1001 luzia && \
     useradd --system --uid 1001 --gid 1001 --no-create-home luzia
 
-# Copy built output and dependencies
-COPY --from=builder /app/apps/mcp/dist ./dist
-COPY --from=builder /app/apps/mcp/package.json ./
+# Bun installs with an isolated layout: /app/node_modules holds the shared
+# `.bun` store, and each workspace's own node_modules contains symlinks into
+# it. We need both, plus the SDK (a workspace package that's symlinked as
+# @luziadev/sdk) with its built dist.
+COPY --from=builder /app/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/mcp/dist ./apps/mcp/dist
+COPY --from=builder /app/apps/mcp/package.json ./apps/mcp/
+COPY --from=builder /app/apps/mcp/node_modules ./apps/mcp/node_modules
+COPY --from=builder /app/packages/sdk/dist ./packages/sdk/dist
+COPY --from=builder /app/packages/sdk/package.json ./packages/sdk/
+
+WORKDIR /app/apps/mcp
 
 USER luzia
 
@@ -60,5 +76,5 @@ EXPOSE 50080
 ENV NODE_ENV=production
 ENV MCP_PORT=50080
 
-# Start the server in HTTP (remote) mode
-CMD ["bun", "run", "start"]
+# Run directly with node from apps/mcp — WORKDIR was set above
+CMD ["node", "dist/index.js"]

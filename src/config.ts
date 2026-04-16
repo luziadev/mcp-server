@@ -58,7 +58,11 @@ function parseAllowedOrigins(raw: string | undefined, nodeEnv: EnvSchema['NODE_E
 
   // In non-prod, always allow localhost for developer convenience.
   if (nodeEnv !== 'production') {
-    for (const origin of ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173']) {
+    for (const origin of [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:5173',
+    ]) {
       if (!explicit.includes(origin)) explicit.push(origin)
     }
   }

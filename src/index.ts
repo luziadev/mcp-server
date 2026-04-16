@@ -85,12 +85,7 @@ async function startHTTPServer(): Promise<void> {
     '/mcp',
     cors({
       origin: (origin) => corsOriginCheck(origin) ?? '',
-      allowHeaders: [
-        'Content-Type',
-        'Authorization',
-        'mcp-session-id',
-        'mcp-protocol-version',
-      ],
+      allowHeaders: ['Content-Type', 'Authorization', 'mcp-session-id', 'mcp-protocol-version'],
       exposeHeaders: ['mcp-session-id'],
       allowMethods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
       credentials: false,
