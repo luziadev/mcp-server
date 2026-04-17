@@ -2,6 +2,31 @@
 
 All notable changes to `@luziadev/mcp-server` will be documented in this file.
 
+## [1.3.0] - 2026-04-17
+
+### Added
+
+- **Hosted remote MCP server** at `https://mcp.luzia.dev/mcp` - Users can now connect directly over Streamable HTTP without installing anything locally. Advertised via a new `installation.remote` block and a `registryType: "remote"` package entry in `server.json`.
+- **Per-user Bearer authentication** - In HTTP mode each client presents its own Luzia API key via `Authorization: Bearer lz_...` on session init. The key is bound to the MCP session and reused for subsequent calls, replacing the previous single-key server model.
+- **Request-scoped API key context** (`src/context.ts`) - `AsyncLocalStorage`-based `requestContext` carries the authenticated user's key from the transport layer down to tool, prompt, and resource handlers.
+- **Abuse guard middleware** (`src/middleware/abuse-guard.ts`) - In-memory token bucket keyed by client IP that throttles unauthenticated requests (30 failures / 60s window, 5min block) to prevent key-guessing and session-init DoS.
+- **CORS allowlist** - Configurable via the new `ALLOWED_ORIGINS` env var; defaults to `claude.ai`, `console.anthropic.com`, and `luzia.dev`, plus `localhost` in non-production.
+- **Session lifecycle management** - Idle sessions (>30min inactive) are evicted every 5 minutes, capped at 10,000 concurrent sessions with a `503 service_unavailable` when full, and unknown session IDs return `404 session_not_found`.
+- **Dockerfile** - Multi-stage Node.js 22 image for standalone deployment (Railway and similar platforms) with non-root `luzia` user and built-in `curl` for healthchecks.
+- **`assertStdioConfig()`** - Fails fast at launch with a clear message when `LUZIA_API_KEY` is missing in stdio mode.
+- **JSON `404` handler** - `/.well-known/*` probes from `mcp-remote` and other OAuth-aware clients now receive JSON `404`s instead of Hono's default plain-text response.
+- **Expanded README** - New "Remote connection (recommended)" section covering Claude.ai web, Claude Desktop via `mcp-remote`, VS Code/Cursor/Cline/Continue.dev, and MCP Inspector, plus detailed examples for each prompt.
+
+### Changed
+
+- **Per-key SDK client cache** - `getLuziaClient()` (single shared singleton) replaced by `getLuziaClientForKey(apiKey)` with a bounded LRU cache (max 500 clients). All tools (`get_ticker`, `get_tickers`, `get_history`, `get_exchanges`, `get_markets`), prompts (`analyze_price_movement`, `analyze_ohlcv`, `compare_exchanges`), and resource handlers updated to resolve the client from the request context.
+- **`LUZIA_API_KEY` is now optional** at startup - Required only in stdio mode; HTTP mode accepts the key per-request via the Authorization header.
+- **Default HTTP port** changed from `50060` to `50080` (`MCP_PORT`, `.env.example`, `server.json`, `CONTRIBUTING.md`, Dockerfile).
+- **Railway config** updated for the standalone repo layout (`dockerfilePath = "Dockerfile"`, `startCommand = "node dist/index.js"`, `internalPort = 50080`).
+- **`dev` script** now uses `node --env-file=.env --watch dist/index.js` so local runs pick up `.env` automatically.
+- **Health and info endpoints** report version `1.3.0`, the new "Streamable HTTP with Bearer auth" transport, and include `analyze_ohlcv` in the prompts list.
+- **Bumped version to 1.3.0** across `package.json` and `server.json` (top-level and packages).
+
 ## [1.2.2] - 2026-04-07
 
 ### Added
