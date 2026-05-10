@@ -16,28 +16,36 @@ const log = createLogger({ module: 'tool:get-exchanges' })
  */
 export const getExchangesTool = {
   name: 'get_exchanges',
-  description: 'List all supported cryptocurrency exchanges with their current status.',
+  description:
+    'List supported exchanges with their current status. Includes both centralized exchanges (CEX, e.g. Binance, Coinbase) and decentralized exchanges (DEX, e.g. Uniswap V3/V4, Raydium). Pass type="cex" or type="dex" to filter.',
   inputSchema: {
     type: 'object' as const,
-    properties: {},
+    properties: {
+      type: {
+        type: 'string',
+        enum: ['cex', 'dex'],
+        description: 'Filter by exchange kind. Omit to include both.',
+      },
+    },
   },
 }
 
 /**
  * Execute the get_exchanges tool
  */
-export async function executeGetExchanges(): Promise<{
+export async function executeGetExchanges(args?: unknown): Promise<{
   content: Array<{ type: 'text'; text: string }>
   isError?: boolean
 }> {
   try {
-    log.debug({}, 'Fetching exchanges')
+    const typeFilter = parseExchangeType(args)
+    log.debug({ typeFilter }, 'Fetching exchanges')
 
     const luzia = getLuziaClientForKey(getCurrentApiKey())
-    const exchanges = await luzia.exchanges.list()
+    const exchanges = await luzia.exchanges.list(typeFilter ? { type: typeFilter } : {})
 
     // Format the response
-    const response = formatExchangesResponse(exchanges)
+    const response = formatExchangesResponse(exchanges, typeFilter)
 
     log.debug({ count: exchanges.length }, 'Exchanges fetched successfully')
 
@@ -71,34 +79,52 @@ export async function executeGetExchanges(): Promise<{
   }
 }
 
+function parseExchangeType(args: unknown): 'cex' | 'dex' | undefined {
+  if (!args || typeof args !== 'object') return undefined
+  const t = (args as { type?: unknown }).type
+  if (t === 'cex' || t === 'dex') return t
+  return undefined
+}
+
+interface ExchangeLike {
+  id?: string
+  name?: string
+  status?: string
+  websiteUrl?: string | null
+  type?: 'cex' | 'dex'
+  chainId?: string | null
+  dexId?: string | null
+}
+
+function formatExchangeLines(exchange: ExchangeLike): string[] {
+  const statusIcon = exchange.status === 'operational' ? '🟢' : '🟠'
+  const kindBadge = exchange.type ? ` _[${exchange.type.toUpperCase()}]_` : ''
+  const lines: string[] = [
+    `### ${exchange.name ?? 'Unknown'} (\`${exchange.id ?? 'unknown'}\`)${kindBadge}`,
+    `- **Status**: ${statusIcon} ${exchange.status ?? 'unknown'}`,
+  ]
+  if (exchange.type === 'dex') {
+    if (exchange.chainId) lines.push(`- **Chain**: ${exchange.chainId}`)
+    if (exchange.dexId) lines.push(`- **Protocol**: ${exchange.dexId}`)
+  }
+  if (exchange.websiteUrl) lines.push(`- **Website**: ${exchange.websiteUrl}`)
+  lines.push('')
+  return lines
+}
+
 /**
  * Format exchanges data for AI-friendly response
  */
 function formatExchangesResponse(
-  exchangesList: Array<{
-    id?: string
-    name?: string
-    status?: string
-    websiteUrl?: string | null
-  }>
+  exchangesList: ExchangeLike[],
+  typeFilter?: 'cex' | 'dex'
 ): string {
-  const lines: string[] = [
-    '## Supported Cryptocurrency Exchanges',
-    '',
-    `Found **${exchangesList.length}** active exchanges:`,
-    '',
-  ]
+  const heading = typeFilter
+    ? `## Supported ${typeFilter.toUpperCase()} Exchanges`
+    : '## Supported Cryptocurrency Exchanges'
 
-  for (const exchange of exchangesList) {
-    const statusIcon = exchange.status === 'operational' ? '🟢' : '🟠'
-
-    lines.push(`### ${exchange.name ?? 'Unknown'} (\`${exchange.id ?? 'unknown'}\`)`)
-    lines.push(`- **Status**: ${statusIcon} ${exchange.status ?? 'unknown'}`)
-    if (exchange.websiteUrl) {
-      lines.push(`- **Website**: ${exchange.websiteUrl}`)
-    }
-    lines.push('')
-  }
+  const lines: string[] = [heading, '', `Found **${exchangesList.length}** active exchanges:`, '']
+  for (const exchange of exchangesList) lines.push(...formatExchangeLines(exchange))
 
   lines.push('---')
   lines.push('*Use `get_ticker` or `get_tickers` to fetch price data from these exchanges.*')

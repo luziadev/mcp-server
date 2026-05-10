@@ -100,7 +100,7 @@ function registerToolHandlers(server: Server): void {
         return executeGetTickers(args)
 
       case 'get_exchanges':
-        return executeGetExchanges()
+        return executeGetExchanges(args)
 
       case 'get_markets':
         return executeGetMarkets(args)

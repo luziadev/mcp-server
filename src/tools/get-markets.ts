@@ -18,13 +18,14 @@ const log = createLogger({ module: 'tool:get-markets' })
 export const getMarketsTool = {
   name: 'get_markets',
   description:
-    'List available trading pairs (markets) for a specific exchange. Can filter by quote currency.',
+    'List available trading pairs (markets) for a specific exchange. Supports both centralized exchanges (e.g. "binance", "coinbase") and decentralized exchanges (e.g. "raydium-solana", "uniswapv3-ethereum"); for DEX exchanges the response includes on-chain pool address, chain, and base/quote token details. Can filter by quote currency.',
   inputSchema: {
     type: 'object' as const,
     properties: {
       exchange: {
         type: 'string',
-        description: 'Exchange to list markets for (e.g., "binance", "coinbase", "kraken")',
+        description:
+          'Exchange to list markets for. CEX examples: "binance", "coinbase", "kraken". DEX examples: "raydium-solana", "uniswapv3-ethereum", "uniswapv4-ethereum".',
       },
       quote: {
         type: 'string',
@@ -92,28 +93,61 @@ export async function executeGetMarkets(args: unknown): Promise<ToolResult> {
   }
 }
 
+interface MarketLike {
+  symbol?: string
+  base?: string
+  quote?: string
+  type?: string
+  chainId?: string | null
+  poolAddress?: string | null
+  poolType?: string | null
+  baseToken?: { address?: string; symbol?: string; decimals?: number; chainId?: string } | null
+  quoteToken?: { address?: string; symbol?: string; decimals?: number; chainId?: string } | null
+}
+
+function formatDexMarketLines(market: MarketLike): string[] {
+  const lines: string[] = [`- \`${market.symbol ?? 'N/A'}\``]
+  if (market.chainId) lines.push(`  - **Chain**: ${market.chainId}`)
+  if (market.poolAddress) {
+    const poolType = market.poolType ? ` (${market.poolType})` : ''
+    lines.push(`  - **Pool**${poolType}: \`${market.poolAddress}\``)
+  }
+  if (market.baseToken?.address) {
+    const sym = market.baseToken.symbol ?? market.base ?? '?'
+    lines.push(`  - **Base token**: ${sym} \`${market.baseToken.address}\``)
+  }
+  if (market.quoteToken?.address) {
+    const sym = market.quoteToken.symbol ?? market.quote ?? '?'
+    lines.push(`  - **Quote token**: ${sym} \`${market.quoteToken.address}\``)
+  }
+  return lines
+}
+
+function groupCexByQuote(markets: MarketLike[]): Map<string, Array<{ symbol: string }>> {
+  const byQuote = new Map<string, Array<{ symbol: string }>>()
+  for (const market of markets) {
+    const quote = market.quote ?? 'UNKNOWN'
+    const existing = byQuote.get(quote) ?? []
+    existing.push({ symbol: market.symbol ?? 'N/A' })
+    byQuote.set(quote, existing)
+  }
+  return byQuote
+}
+
 /**
- * Format markets data for AI-friendly response
+ * Format markets data for AI-friendly response.
+ *
+ * DEX markets (`type === 'dex'`) get a per-pool detailed listing with chain
+ * and token addresses; CEX markets are shown grouped by quote currency.
  */
 function formatMarketsResponse(
   exchange: string,
-  marketsList: Array<{
-    symbol?: string
-    base?: string
-    quote?: string
-  }>,
+  marketsList: MarketLike[],
   totalCount: number,
   quoteFilter?: string
 ): string {
-  // Group markets by quote currency
-  const byQuote = new Map<string, Array<{ symbol: string; base: string }>>()
-
-  for (const market of marketsList) {
-    const quote = market.quote ?? 'UNKNOWN'
-    const existing = byQuote.get(quote) ?? []
-    existing.push({ symbol: market.symbol ?? 'N/A', base: market.base ?? 'N/A' })
-    byQuote.set(quote, existing)
-  }
+  const dexMarkets = marketsList.filter((m) => m.type === 'dex')
+  const cexMarkets = marketsList.filter((m) => m.type !== 'dex')
 
   const lines: string[] = [
     `## Markets on ${exchange.toUpperCase()}`,
@@ -122,15 +156,22 @@ function formatMarketsResponse(
     '',
   ]
 
-  // Show markets grouped by quote currency
-  for (const [quoteCurrency, pairs] of byQuote) {
-    lines.push(`### ${quoteCurrency} Pairs (${pairs.length})`)
+  if (dexMarkets.length > 0) {
+    lines.push(`### DEX Pools (${dexMarkets.length})`)
     lines.push('')
+    for (const m of dexMarkets) {
+      lines.push(...formatDexMarketLines(m))
+    }
+    lines.push('')
+  }
 
-    // Show as a comma-separated list for readability
-    const symbols = pairs.map((p) => `\`${p.symbol}\``).join(', ')
-    lines.push(symbols)
-    lines.push('')
+  if (cexMarkets.length > 0) {
+    for (const [quoteCurrency, pairs] of groupCexByQuote(cexMarkets)) {
+      lines.push(`### ${quoteCurrency} Pairs (${pairs.length})`)
+      lines.push('')
+      lines.push(pairs.map((p) => `\`${p.symbol}\``).join(', '))
+      lines.push('')
+    }
   }
 
   lines.push('---')

@@ -177,7 +177,7 @@ Fetches ticker data from multiple exchanges and compares prices, spreads, and li
 ## Rate Limits
 
 Inherits from your Luzia subscription tier:
-- **Free:** 100 requests/minute, 5,000/day
+- **Free:** 25 requests/minute, 1,000/day
 - **Pro:** 1,000 requests/minute, 20,000/day
 
 ## Troubleshooting
