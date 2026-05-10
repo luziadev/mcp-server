@@ -99,8 +99,8 @@ export async function executeGetHistory(args: unknown): Promise<ToolResult> {
       data.symbol ?? symbol,
       data.interval ?? interval ?? '1h',
       data.candles,
-      data.start ?? '',
-      data.end ?? ''
+      data.start,
+      data.end
     )
 
     log.debug({ exchange, symbol, count: data.count }, 'History fetched successfully')
@@ -122,8 +122,8 @@ function formatHistoryResponse(
   symbol: string,
   interval: string,
   candles: OHLCVCandle[],
-  start: string,
-  end: string
+  start: number | null | undefined,
+  end: number | null | undefined
 ): string {
   const first = candles[0]
   const last = candles[candles.length - 1]
@@ -153,8 +153,8 @@ function formatHistoryResponse(
     `- **Open (first):** ${formatPrice(firstOpen)}`,
     `- **Close (last):** ${formatPrice(lastClose)}`,
     `- **Period Change:** ${formatChange(priceChange, priceChangePercent)}`,
-    `- **Period High:** ${formatPrice(highCandle.high ?? 0)} (${formatTimestamp(highCandle.timestamp ?? '')})`,
-    `- **Period Low:** ${formatPrice(lowCandle.low ?? 0)} (${formatTimestamp(lowCandle.timestamp ?? '')})`,
+    `- **Period High:** ${formatPrice(highCandle.high ?? 0)} (${formatTimestamp(highCandle.timestamp)})`,
+    `- **Period Low:** ${formatPrice(lowCandle.low ?? 0)} (${formatTimestamp(lowCandle.timestamp)})`,
     `- **Total Volume:** ${formatVolume(totalVolume)}`,
     `- **Total Quote Volume:** ${formatVolume(totalQuoteVolume)}`,
     '',
@@ -168,7 +168,7 @@ function formatHistoryResponse(
   const recentCandles = candles.slice(-10)
   for (const c of recentCandles) {
     lines.push(
-      `| ${formatTimestamp(c.timestamp ?? '')} | ${formatPrice(c.open ?? 0)} | ${formatPrice(c.high ?? 0)} | ${formatPrice(c.low ?? 0)} | ${formatPrice(c.close ?? 0)} | ${formatVolume(c.volume ?? 0)} |`
+      `| ${formatTimestamp(c.timestamp)} | ${formatPrice(c.open ?? 0)} | ${formatPrice(c.high ?? 0)} | ${formatPrice(c.low ?? 0)} | ${formatPrice(c.close ?? 0)} | ${formatVolume(c.volume ?? 0)} |`
     )
   }
 
@@ -179,9 +179,12 @@ function formatHistoryResponse(
   return lines.join('\n')
 }
 
-function formatTimestamp(ts: string): string {
-  if (!ts) return 'N/A'
-  return ts.replace('T', ' ').replace(/\.\d+Z$/, 'Z')
+function formatTimestamp(ts: number | null | undefined): string {
+  if (ts == null) return 'N/A'
+  return new Date(ts)
+    .toISOString()
+    .replace('T', ' ')
+    .replace(/\.\d+Z$/, 'Z')
 }
 
 function formatPrice(price: number): string {

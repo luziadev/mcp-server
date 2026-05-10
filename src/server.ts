@@ -28,15 +28,21 @@ import {
 import { getLuziaClientForKey } from './sdk.js'
 import {
   executeGetExchanges,
+  executeGetFiatCurrencies,
   executeGetHistory,
   executeGetMarkets,
   executeGetTicker,
   executeGetTickers,
+  executeGetToken,
+  executeGetTokens,
   getExchangesTool,
+  getFiatCurrenciesTool,
   getHistoryTool,
   getMarketsTool,
   getTickersTool,
   getTickerTool,
+  getTokensTool,
+  getTokenTool,
 } from './tools/index.js'
 
 const log = createLogger({ module: 'mcp-server' })
@@ -82,7 +88,16 @@ function registerToolHandlers(server: Server): void {
     log.debug({}, 'Listing tools')
 
     return {
-      tools: [getTickerTool, getTickersTool, getHistoryTool, getExchangesTool, getMarketsTool],
+      tools: [
+        getTickerTool,
+        getTickersTool,
+        getHistoryTool,
+        getExchangesTool,
+        getMarketsTool,
+        getTokensTool,
+        getTokenTool,
+        getFiatCurrenciesTool,
+      ],
     }
   })
 
@@ -107,6 +122,15 @@ function registerToolHandlers(server: Server): void {
 
       case 'get_history':
         return executeGetHistory(args)
+
+      case 'get_tokens':
+        return executeGetTokens(args)
+
+      case 'get_token':
+        return executeGetToken(args)
+
+      case 'get_fiat_currencies':
+        return executeGetFiatCurrencies(args)
 
       default:
         return {

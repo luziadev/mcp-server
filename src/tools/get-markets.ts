@@ -101,8 +101,18 @@ interface MarketLike {
   chainId?: string | null
   poolAddress?: string | null
   poolType?: string | null
-  baseToken?: { address?: string; symbol?: string; decimals?: number; chainId?: string } | null
-  quoteToken?: { address?: string; symbol?: string; decimals?: number; chainId?: string } | null
+  baseToken?: {
+    address?: string | null
+    symbol?: string
+    decimals?: number
+    chainId?: string | null
+  } | null
+  quoteToken?: {
+    address?: string | null
+    symbol?: string
+    decimals?: number
+    chainId?: string | null
+  } | null
 }
 
 function formatDexMarketLines(market: MarketLike): string[] {

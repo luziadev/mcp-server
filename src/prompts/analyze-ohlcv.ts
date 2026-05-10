@@ -180,7 +180,7 @@ function buildOhlcvAnalysisPrompt(
   // Show up to 20 candles for analysis
   const displayCandles = candles.slice(-20)
   for (const c of displayCandles) {
-    candleTable += `| ${formatTimestamp(c.timestamp ?? '')} | ${formatPrice(c.open ?? 0)} | ${formatPrice(c.high ?? 0)} | ${formatPrice(c.low ?? 0)} | ${formatPrice(c.close ?? 0)} | ${formatVolume(c.volume ?? 0)} |\n`
+    candleTable += `| ${formatTimestamp(c.timestamp)} | ${formatPrice(c.open ?? 0)} | ${formatPrice(c.high ?? 0)} | ${formatPrice(c.low ?? 0)} | ${formatPrice(c.close ?? 0)} | ${formatVolume(c.volume ?? 0)} |\n`
   }
 
   return `Analyze the OHLCV candlestick data for ${symbol} on ${exchange.toUpperCase()}:
@@ -188,14 +188,14 @@ function buildOhlcvAnalysisPrompt(
 ## Data Overview
 - **Interval:** ${interval}
 - **Period:** ${period} (${candles.length} candles)
-- **Time Range:** ${formatTimestamp(first.timestamp ?? '')} to ${formatTimestamp(last.timestamp ?? '')}
+- **Time Range:** ${formatTimestamp(first.timestamp)} to ${formatTimestamp(last.timestamp)}
 
 ## Summary Statistics
 - **Open (first candle):** $${formatPrice(firstOpen)}
 - **Close (last candle):** $${formatPrice(lastClose)}
 - **Period Change:** ${priceChangePercent >= 0 ? '+' : ''}${priceChangePercent.toFixed(2)}% ($${formatPrice(Math.abs(priceChange))})
-- **Period High:** $${formatPrice(highCandle.high ?? 0)} at ${formatTimestamp(highCandle.timestamp ?? '')}
-- **Period Low:** $${formatPrice(lowCandle.low ?? 0)} at ${formatTimestamp(lowCandle.timestamp ?? '')}
+- **Period High:** $${formatPrice(highCandle.high ?? 0)} at ${formatTimestamp(highCandle.timestamp)}
+- **Period Low:** $${formatPrice(lowCandle.low ?? 0)} at ${formatTimestamp(lowCandle.timestamp)}
 - **Total Volume:** ${formatVolume(totalVolume)}
 - **Average Volume/Candle:** ${formatVolume(avgVolume)}
 - **Volume Spikes (>2x avg):** ${volumeSpikes}
@@ -215,9 +215,12 @@ Please provide:
 6. **Key Observations**: Any other noteworthy patterns or signals in the data.`
 }
 
-function formatTimestamp(ts: string): string {
-  if (!ts) return 'N/A'
-  return ts.replace('T', ' ').replace(/\.\d+Z$/, 'Z')
+function formatTimestamp(ts: number | null | undefined): string {
+  if (ts == null) return 'N/A'
+  return new Date(ts)
+    .toISOString()
+    .replace('T', ' ')
+    .replace(/\.\d+Z$/, 'Z')
 }
 
 function formatPrice(price: number): string {

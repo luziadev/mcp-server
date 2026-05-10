@@ -103,7 +103,7 @@ function formatTickerResponse(ticker: {
   quoteVolume?: number | null
   change?: number | null
   changePercent?: number | null
-  timestamp?: string
+  timestamp?: number
 }): string {
   const lines: string[] = [
     `## ${ticker.symbol ?? 'Unknown'} on ${(ticker.exchange ?? 'unknown').toUpperCase()}`,
@@ -123,7 +123,7 @@ function formatTickerResponse(ticker: {
     `- **Base Volume**: ${formatVolume(ticker.volume)}`,
     `- **Quote Volume**: ${formatVolume(ticker.quoteVolume)}`,
     '',
-    `*Last updated: ${ticker.timestamp ?? 'N/A'}*`,
+    `*Last updated: ${ticker.timestamp != null ? new Date(ticker.timestamp).toISOString() : 'N/A'}*`,
   ]
 
   return lines.join('\n')
