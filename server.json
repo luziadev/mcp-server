@@ -169,6 +169,68 @@
         },
         "required": ["exchange", "symbol"]
       }
+    },
+    {
+      "name": "get_tokens",
+      "description": "List Luzia tokens - canonical assets (id 'crypto:SYMBOL') or on-chain instances (id '{chain}:SYMBOL'). Stablecoins like USDC are tokens.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "search": {
+            "type": "string",
+            "description": "Case-insensitive search across symbol, name, and id"
+          },
+          "chain": {
+            "type": "string",
+            "description": "Filter by chain id (e.g. 'ethereum', 'solana')"
+          },
+          "hasChain": {
+            "type": "string",
+            "enum": ["true", "false"],
+            "description": "'true' returns on-chain tokens only, 'false' canonical only"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum number of tokens to return (default: 20, max: 100)"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_token",
+      "description": "Get a single token by its composite id ('crypto:SYMBOL' or '{chain}:SYMBOL', e.g. 'ethereum:WETH')",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Composite token id, e.g. 'crypto:USDC' or 'ethereum:WETH'"
+          }
+        },
+        "required": ["id"]
+      }
+    },
+    {
+      "name": "get_fiat_currencies",
+      "description": "List ISO 4217 fiat currencies referenced by Luzia markets (USD, EUR, GBP, ...). Stablecoins are tokens - use get_tokens.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "search": {
+            "type": "string",
+            "description": "Case-insensitive search across code and name"
+          },
+          "enabled": {
+            "type": "string",
+            "enum": ["all", "true", "false"],
+            "description": "'true' enabled only (default), 'false' disabled only, 'all' for both"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Maximum number of currencies to return (default: 50, max: 200)"
+          }
+        }
+      }
     }
   ],
   "prompts": [
@@ -204,7 +266,7 @@
     {
       "registryType": "npm",
       "identifier": "@luziadev/mcp-server",
-      "version": "1.3.0",
+      "version": "1.4.0",
       "transport": {
         "type": "stdio"
       },

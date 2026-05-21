@@ -2,6 +2,22 @@
 
 All notable changes to `@luziadev/mcp-server` will be documented in this file.
 
+## [1.4.0] - 2026-05-21
+
+### Added
+
+- **`get_tokens` tool** - List canonical assets and on-chain tokens (`/v1/tokens`) with case-insensitive search, chain filter, and an on-chain/canonical filter.
+- **`get_token` tool** - Look up a single token by composite id (`crypto:SYMBOL` for chainless canonical assets, `{chain}:SYMBOL` for on-chain instances).
+- **`get_fiat_currencies` tool** - List ISO 4217 fiat currencies referenced by markets (`/v1/fiat-currencies`), with search and an enabled filter.
+- **DEX support** - `get_exchanges` and `get_markets` now surface decentralized exchanges (Uniswap V3/V4, Raydium, ...). DEX markets report `chainId`, `poolAddress`, `poolType`, and their base/quote on-chain tokens.
+- **MCP Registry publishing** - New `publish-mcp.yml` workflow publishes the server to the official MCP registry on tag push.
+
+### Changed
+
+- **Bumped version to 1.4.0** across `package.json` and `server.json` (top-level and `packages`).
+- Registered `get_tokens`, `get_token`, and `get_fiat_currencies` in `server.json` and the HTTP info endpoint; health and info endpoints report version `1.4.0`.
+- Raised the `@luziadev/sdk` dependency to `^1.3.0` - the tokens and fiat-currencies tools require its `tokens` and `fiatCurrencies` resources.
+
 ## [1.3.0] - 2026-04-17
 
 ### Added

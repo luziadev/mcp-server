@@ -119,8 +119,11 @@ Add to `.claude/settings.json`:
 | `get_ticker` | Get current price for a specific trading pair |
 | `get_tickers` | Get prices for multiple pairs or all pairs on an exchange |
 | `get_history` | Get historical OHLCV candlestick data for a trading pair |
-| `get_exchanges` | List supported exchanges and their status |
-| `get_markets` | List available trading pairs on an exchange |
+| `get_exchanges` | List supported exchanges (CEX and DEX) and their status |
+| `get_markets` | List trading pairs on an exchange, including DEX pool metadata |
+| `get_tokens` | List canonical assets and on-chain tokens, with search and chain filters |
+| `get_token` | Look up a single token by composite id (`crypto:SYMBOL` or `{chain}:SYMBOL`) |
+| `get_fiat_currencies` | List ISO 4217 fiat currencies referenced by markets |
 
 ## Available Prompts
 

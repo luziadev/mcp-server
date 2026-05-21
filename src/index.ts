@@ -176,7 +176,7 @@ async function startHTTPServer(): Promise<void> {
     return c.json({
       status: 'ok',
       server: 'luzia-mcp',
-      version: '1.3.0',
+      version: '1.4.0',
       activeSessions: sessions.size,
       apiUrl: env.api.url,
     })
@@ -185,12 +185,21 @@ async function startHTTPServer(): Promise<void> {
   app.get('/', (c) => {
     return c.json({
       name: 'Luzia MCP Server',
-      version: '1.3.0',
+      version: '1.4.0',
       description: 'Model Context Protocol server for cryptocurrency pricing data',
       transport: 'Streamable HTTP with Bearer auth',
       mcpEndpoint: '/mcp',
       docs: 'https://luzia.dev/docs/mcp',
-      tools: ['get_ticker', 'get_tickers', 'get_history', 'get_exchanges', 'get_markets'],
+      tools: [
+        'get_ticker',
+        'get_tickers',
+        'get_history',
+        'get_exchanges',
+        'get_markets',
+        'get_tokens',
+        'get_token',
+        'get_fiat_currencies',
+      ],
       prompts: ['analyze_price_movement', 'compare_exchanges', 'analyze_ohlcv'],
     })
   })
